@@ -12,6 +12,7 @@ from nonebot.command import SwitchException, _FinishException, _PauseException
 import hoshino
 from hoshino import log, priv, trigger
 from hoshino.typing import *
+from hoshino import HoshinoBot
 
 try:
     import ujson as json
