@@ -25,7 +25,7 @@ HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](http://priconne-red
 - **切噜语编解码**：切噜～♪
 - **竞技场余矿查询**
 
-> 由于bot的功能会快速迭代开发，使用方式这里不进行具体的说明，请向bot发送"help"或移步[此文件](hoshino/modules/botmanage/help.py)查看详细。会战管理功能的详细说明，请[点击这里](hoshino/modules/pcrclanbattle/clanbattle/README.md)
+> 由于bot的功能会快速迭代开发，使用方式这里不进行具体的说明，请向bot发送"help"或移步[此文件](hoshino/modules/bot_manager/help.py)查看详细。会战管理功能的详细说明，请[点击这里](hoshino/modules/pcrclanbattle/clanbattle/README.md)
 
 HoshinoBot 还具有以下通用功能：
 
