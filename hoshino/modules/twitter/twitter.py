@@ -19,15 +19,17 @@ sv = Service('twitter-poller', use_priv=priv.SUPERUSER, manage_priv=priv.SUPERUS
 URL_TIMELINE = 'statuses/user_timeline'
 
 subr_dic = {
-    Service('kc-twitter', enable_on_default=False, help_='艦これ官推转发', bundle='kancolle'): ['KanColle_STAFF', 'C2_STAFF', 'ywwuyi'],
-    Service('pcr-twitter', enable_on_default=True, help_='日服Twitter转发', bundle='pcr订阅'): ['priconne_redive', 'priconne_anime'],
+    Service('kc-twitter', enable_on_default=False, help_='艦これ官推转发', bundle='kancolle'): ['KanColle_STAFF', 'C2_STAFF',
+                                                                                         'ywwuyi'],
+    Service('pcr-twitter', enable_on_default=True, help_='日服Twitter转发', bundle='pcr订阅'): ['priconne_redive',
+                                                                                          'priconne_anime'],
     Service('pripri-twitter', enable_on_default=False, visible=False): ['pripri_anime'],
     Service('coffee-favorite-twitter', manage_priv=priv.SUPERUSER,
             enable_on_default=False, visible=False): ['shiratamacaron', 'k_yuizaki', 'suzukitoto0323', 'watanohara2'],
 }
 
-latest_info = {}      # { account: {last_tweet_id: int, profile_image: str } }
-for _, ids in subr_dic.items():     # initialize
+latest_info = {}  # { account: {last_tweet_id: int, profile_image: str } }
+for _, ids in subr_dic.items():  # initialize
     for account in ids:
         latest_info[account] = {'last_tweet_id': 0, 'profile_image': '', 'media_only': False}
 
@@ -41,7 +43,7 @@ async def twt_request(*args, **kwargs):
         None, partial(api.request, *args, **kwargs))
 
 
-def update_latest_info(account:str, rsp:TwitterResponse):
+def update_latest_info(account: str, rsp: TwitterResponse):
     for item in rsp.get_iterator():
         if item['id'] > latest_info[account]['last_tweet_id']:
             latest_info[account]['last_tweet_id'] = item['id']
@@ -75,13 +77,13 @@ def has_media(item):
         return False
 
 
-async def poll_new_tweets(account:str):
-    if not latest_info[account]['last_tweet_id']:   # on the 1st time
+async def poll_new_tweets(account: str):
+    if not latest_info[account]['last_tweet_id']:  # on the 1st time
         params = {'screen_name': account, 'count': '1'}
         rsp = await twt_request(URL_TIMELINE, params)
         update_latest_info(account, rsp)
         return []
-    else:       # on other times
+    else:  # on other times
         params = {
             'screen_name': account,
             'count': '10',
@@ -109,6 +111,7 @@ _subr_num = len(latest_info)
 _freq = 8 * _subr_num
 sv.logger.info(f"twitter_poller works at {_subr_num} / {_freq} seconds")
 
+
 @sv.scheduled_job('interval', seconds=_freq)
 async def twitter_poller():
     buf = {}
@@ -129,7 +132,8 @@ async def twitter_poller():
             twts.extend(buf.get(account, []))
         await ssv.broadcast(twts, ssv.name, 0.5)
 
-@sv.on_prefix('看推', only_to_me=True)     # for test
+
+@sv.on_prefix('看推', only_to_me=True)  # for test
 async def one_tweet(bot, ev: CQEvent):
     args = ev.message.extract_plain_text().split()
     try:

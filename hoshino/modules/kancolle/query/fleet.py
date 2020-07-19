@@ -9,6 +9,7 @@ from . import sv
 ship_folder = R.img('kancolle/ship/').path
 equip_folder = R.img('kancolle/equip/').path
 
+
 def _load_data():
     config = util.load_config(__file__)
     db = config.get("data", {})
@@ -19,6 +20,7 @@ def _load_data():
             img = str(R.img('kancolle/', m.group(1)).cqcode)
             db[k] = rex.sub(img, v)
     return db
+
 
 DB = _load_data()
 

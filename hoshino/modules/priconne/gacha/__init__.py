@@ -14,7 +14,6 @@ try:
 except:
     import json
 
-
 sv_help = '''
 [星乃来发十连] 转蛋模拟
 [星乃来发单抽] 转蛋模拟
@@ -40,6 +39,7 @@ except FileNotFoundError as e:
     sv.logger.warning('group_pool_config.json not found, will create when needed.')
 _group_pool = defaultdict(lambda: DEFAULT_POOL, _group_pool)
 
+
 def dump_pool_config():
     with open(_pool_config_file, 'w', encoding='utf8') as f:
         json.dump(_group_pool, f, ensure_ascii=False)
@@ -53,6 +53,7 @@ gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来�
                    '單抽', '單抽！', '來發單抽', '來個單抽', '來次單抽', '轉蛋單抽', '單抽轉蛋')
 gacha_300_aliases = ('抽一井', '来一井', '来发井', '抽发井', '天井扭蛋', '扭蛋天井', '天井轉蛋', '轉蛋天井')
 
+
 @sv.on_fullmatch(('卡池资讯', '查看卡池', '看看卡池', '康康卡池', '卡池資訊', '看看up', '看看UP'))
 async def gacha_info(bot, ev: CQEvent):
     gid = str(ev.group_id)
@@ -62,10 +63,12 @@ async def gacha_info(bot, ev: CQEvent):
         up_chara = map(lambda x: str(
             chara.fromname(x, star=3).icon.cqcode) + x, up_chara)
     up_chara = '\n'.join(up_chara)
-    await bot.send(ev, f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%")
+    await bot.send(ev, f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob / 10):.1f}% 3★出率={(gacha.s3_prob) / 10:.1f}%")
 
 
 POOL_NAME_TIP = '请选择以下卡池\n> 切换卡池jp\n> 切换卡池tw\n> 切换卡池b\n> 切换卡池mix'
+
+
 @sv.on_prefix(('切换卡池', '选择卡池', '切換卡池', '選擇卡池'))
 async def set_pool(bot, ev: CQEvent):
     if not priv.check_priv(ev, priv.ADMIN):
@@ -104,7 +107,6 @@ async def check_tenjo_num(bot, ev: CQEvent):
 
 @sv.on_prefix(gacha_1_aliases, only_to_me=True)
 async def gacha_1(bot, ev: CQEvent):
-
     await check_jewel_num(bot, ev)
     jewel_limit.increase(ev.user_id, 150)
 
@@ -113,7 +115,7 @@ async def gacha_1(bot, ev: CQEvent):
     chara, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
     silence_time = hiishi * 60
 
-    res = f'{chara.name} {"★"*chara.star}'
+    res = f'{chara.name} {"★" * chara.star}'
     if sv.bot.config.USE_CQPRO:
         res = f'{chara.icon.cqcode} {res}'
 
@@ -139,12 +141,12 @@ async def gacha_10(bot, ev: CQEvent):
         res = concat_pic([res1, res2])
         res = pic2b64(res)
         res = MessageSegment.image(res)
-        result = [f'{c.name}{"★"*c.star}' for c in result]
+        result = [f'{c.name}{"★" * c.star}' for c in result]
         res1 = ' '.join(result[0:5])
         res2 = ' '.join(result[5:])
         res = f'{res}\n{res1}\n{res2}'
     else:
-        result = [f'{c.name}{"★"*c.star}' for c in result]
+        result = [f'{c.name}{"★" * c.star}' for c in result]
         res1 = ' '.join(result[0:5])
         res2 = ' '.join(result[5:])
         res = f'{res1}\n{res2}'
@@ -157,7 +159,6 @@ async def gacha_10(bot, ev: CQEvent):
 
 @sv.on_prefix(gacha_300_aliases, only_to_me=True)
 async def gacha_300(bot, ev: CQEvent):
-
     await check_tenjo_num(bot, ev)
     tenjo_limit.increase(ev.user_id)
 
@@ -186,8 +187,8 @@ async def gacha_300(bot, ev: CQEvent):
 
     msg = [
         f"\n素敵な仲間が増えますよ！ {res}",
-        f"★★★×{up+s3} ★★×{s2} ★×{s1}",
-        f"获得记忆碎片×{100*up}与女神秘石×{50*(up+s3) + 10*s2 + s1}！\n第{result['first_up_pos']}抽首次获得up角色" if up else f"获得女神秘石{50*(up+s3) + 10*s2 + s1}个！"
+        f"★★★×{up + s3} ★★×{s2} ★×{s1}",
+        f"获得记忆碎片×{100 * up}与女神秘石×{50 * (up + s3) + 10 * s2 + s1}！\n第{result['first_up_pos']}抽首次获得up角色" if up else f"获得女神秘石{50 * (up + s3) + 10 * s2 + s1}个！"
     ]
 
     if up == 0 and s3 == 0:
@@ -215,7 +216,7 @@ async def gacha_300(bot, ev: CQEvent):
         msg.append("记忆碎片一大堆！您是托吧？")
 
     await bot.send(ev, '\n'.join(msg), at_sender=True)
-    silence_time = (100*up + 50*(up+s3) + 10*s2 + s1) * 1
+    silence_time = (100 * up + 50 * (up + s3) + 10 * s2 + s1) * 1
     await silence(ev, silence_time)
 
 

@@ -12,7 +12,8 @@ from .exception import *
 sv = Service('clanbattle')
 SORRY = 'ごめんなさい！嘤嘤嘤(〒︿〒)'
 
-_registry:Dict[str, Tuple[Callable, ArgParser]] = {}
+_registry: Dict[str, Tuple[Callable, ArgParser]] = {}
+
 
 @sv.on_message('group')
 async def _clanbattle_bus(bot, ctx):
@@ -46,12 +47,13 @@ async def _clanbattle_bus(bot, ctx):
             await bot.send(ctx, f'Error: 机器人出现未预料的错误\n{SORRY}\n※请及时联系维护组', at_sender=True)
 
 
-def cb_cmd(name, parser:ArgParser) -> Callable:
+def cb_cmd(name, parser: ArgParser) -> Callable:
     if isinstance(name, str):
-        name = (name, )
+        name = (name,)
     if not isinstance(name, Iterable):
         raise ValueError('`name` of cb_cmd must be `str` or `Iterable[str]`')
     names = map(lambda x: util.normalize_str(x), name)
+
     def deco(func) -> Callable:
         for n in names:
             if n in _registry:
@@ -59,11 +61,11 @@ def cb_cmd(name, parser:ArgParser) -> Callable:
             else:
                 _registry[n] = (func, parser)
         return func
+
     return deco
 
 
 from .cmdv2 import *
-
 
 QUICK_START = f'''
 ======================
@@ -100,10 +102,12 @@ QUICK_START = f'''
 ※使用前请务必【逐字】阅读开头的必读事项
 '''.rstrip()
 
+
 @on_command('!帮助', aliases=('！帮助', '!幫助', '！幫助', '!help', '！help'), only_to_me=False)
-async def cb_help(session:CommandSession):
+async def cb_help(session: CommandSession):
     await session.send(QUICK_START, at_sender=True)
-    msg = MessageSegment.share(url='https://github.com/Ice-Cirno/HoshinoBot/blob/master/hoshino/modules/pcrclanbattle/clanbattle/README.md',
-                               title='Hoshino会战管理v2',
-                               content='命令一览表')
+    msg = MessageSegment.share(
+        url='https://github.com/Ice-Cirno/HoshinoBot/blob/master/hoshino/modules/pcrclanbattle/clanbattle/README.md',
+        title='Hoshino会战管理v2',
+        content='命令一览表')
     await session.send(msg)

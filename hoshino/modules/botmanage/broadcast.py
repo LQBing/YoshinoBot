@@ -10,7 +10,7 @@ async def broadcast(session: CommandSession):
     msg = session.current_arg
     for sid in hoshino.get_self_ids():
         gl = await session.bot.get_group_list(self_id=sid)
-        gl = [ g['group_id'] for g in gl ]
+        gl = [g['group_id'] for g in gl]
         for g in gl:
             await asyncio.sleep(0.5)
             try:

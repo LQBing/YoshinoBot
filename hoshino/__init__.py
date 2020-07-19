@@ -1,10 +1,8 @@
 import os
-
 import aiocqhttp
 import nonebot
 from nonebot import Message, MessageSegment, message_preprocessor
 from nonebot.message import CanceledException
-
 from .log import new_logger
 from . import config
 
@@ -12,6 +10,7 @@ _bot = None
 HoshinoBot = nonebot.NoneBot
 os.makedirs(os.path.expanduser('~/.hoshino'), exist_ok=True)
 logger = new_logger('hoshino', config.DEBUG)
+
 
 def init() -> HoshinoBot:
     global _bot

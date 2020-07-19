@@ -1,6 +1,7 @@
 from nonebot import on_request, RequestSession
 import hoshino
 
+
 @on_request('group.add')
 async def join_approve(session: RequestSession):
     cfg = hoshino.config.groupmaster.join_approve

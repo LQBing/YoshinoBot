@@ -13,12 +13,12 @@ from . import _pcr_data
 logger = log.new_logger('chara')
 UNKNOWN = 1000
 UnavailableChara = {
-    1067,   # 穗希
-    1068,   # 晶
-    1069,   # 霸瞳
-    1072,   # 可萝爹
-    1073,   # 拉基拉基
-    1102,   # 泳装大眼
+    1067,  # 穗希
+    1068,  # 晶
+    1069,  # 霸瞳
+    1072,  # 可萝爹
+    1073,  # 拉基拉基
+    1102,  # 泳装大眼
 }
 
 try:
@@ -36,7 +36,7 @@ class Roster:
     def __init__(self):
         self._roster = pygtrie.CharTrie()
         self.update()
-    
+
     def update(self):
         importlib.reload(_pcr_data)
         self._roster.clear()
@@ -49,17 +49,14 @@ class Roster:
                     logger.warning(f'priconne.chara.Roster: 出现重名{n}于id{idx}与id{self._roster[n]}')
         self._all_name_list = self._roster.keys()
 
-
     def get_id(self, name):
         name = util.normalize_str(name)
         return self._roster[name] if name in self._roster else UNKNOWN
-
 
     def guess_id(self, name):
         """@return: id, name, score"""
         name, score = process.extractOne(name, self._all_name_list)
         return self._roster[name], name, score
-
 
     def parse_team(self, namestr):
         """@return: List[ids], unknown_namestr"""
@@ -79,19 +76,24 @@ class Roster:
 
 roster = Roster()
 
+
 def name2id(name):
     return roster.get_id(name)
 
+
 def fromid(id_, star=0, equip=0):
     return Chara(id_, star, equip)
+
 
 def fromname(name, star=0, equip=0):
     id_ = name2id(name)
     return Chara(id_, star, equip)
 
+
 def guess_id(name):
     """@return: id, name, score"""
     return roster.guess_id(name)
+
 
 def is_npc(id_):
     if id_ in UnavailableChara:
@@ -99,9 +101,10 @@ def is_npc(id_):
     else:
         return not ((1000 < id_ < 1200) or (1800 < id_ < 1900))
 
+
 def gen_team_pic(team, size=64, star_slot_verbose=True):
     num = len(team)
-    des = Image.new('RGBA', (num*size, size), (255, 255, 255, 255))
+    des = Image.new('RGBA', (num * size, size), (255, 255, 255, 255))
     for i, chara in enumerate(team):
         src = chara.render_icon(size, star_slot_verbose)
         des.paste(src, (i * size, 0), src)
@@ -148,7 +151,7 @@ class Chara:
             res = R.img(f'priconne/unit/icon_unit_{self.id}31.png')
         if not res.exist:
             res = R.img(f'priconne/unit/icon_unit_{self.id}11.png')
-        if not res.exist:   # FIXME: 不方便改成异步请求
+        if not res.exist:  # FIXME: 不方便改成异步请求
             download_chara_icon(self.id, 6)
             download_chara_icon(self.id, 3)
             download_chara_icon(self.id, 1)
@@ -161,7 +164,6 @@ class Chara:
             res = R.img(f'priconne/unit/icon_unit_{UNKNOWN}31.png')
         return res
 
-
     def render_icon(self, size, star_slot_verbose=True) -> Image:
         try:
             pic = self.icon.open().convert('RGBA').resize((size, size), Image.LANCZOS)
@@ -171,32 +173,31 @@ class Chara:
 
         l = size // 6
         star_lap = round(l * 0.15)
-        margin_x = ( size - 6*l ) // 2
+        margin_x = (size - 6 * l) // 2
         margin_y = round(size * 0.05)
         if self.star:
             for i in range(5 if star_slot_verbose else min(self.star, 5)):
-                a = i*(l-star_lap) + margin_x
+                a = i * (l - star_lap) + margin_x
                 b = size - l - margin_y
                 s = gadget_star if self.star > i else gadget_star_dis
                 s = s.resize((l, l), Image.LANCZOS)
-                pic.paste(s, (a, b, a+l, b+l), s)
+                pic.paste(s, (a, b, a + l, b + l), s)
             if 6 == self.star:
-                a = 5*(l-star_lap) + margin_x
+                a = 5 * (l - star_lap) + margin_x
                 b = size - l - margin_y
                 s = gadget_star_pink
                 s = s.resize((l, l), Image.LANCZOS)
-                pic.paste(s, (a, b, a+l, b+l), s)
+                pic.paste(s, (a, b, a + l, b + l), s)
         if self.equip:
             l = round(l * 1.5)
             a = margin_x
             b = margin_x
             s = gadget_equip.resize((l, l), Image.LANCZOS)
-            pic.paste(s, (a, b, a+l, b+l), s)
+            pic.paste(s, (a, b, a + l, b + l), s)
         return pic
 
 
-
-@sucmd('reload-pcr-chara', force_private=False, aliases=('重载角色花名册', ))
+@sucmd('reload-pcr-chara', force_private=False, aliases=('重载角色花名册',))
 async def reload_pcr_chara(session: CommandSession):
     try:
         roster.update()

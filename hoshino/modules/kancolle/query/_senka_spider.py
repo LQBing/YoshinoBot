@@ -5,15 +5,18 @@ from PIL import Image
 from io import BytesIO
 
 proxies = {
-  "http": "http://127.0.0.1:10809",
-  "https": "http://127.0.0.1:10809",
+    "http": "http://127.0.0.1:10809",
+    "https": "http://127.0.0.1:10809",
 }
+
 
 def get_rank_id(yy, mm, ss):
     return f"rank{yy:02d}{mm:02d}{ss:02d}.jpg"
 
+
 def get_url(yy, mm, ss):
     return f"http://203.104.209.7/kcscontents/information/image/{get_rank_id(yy, mm, ss)}"
+
 
 def download_img(save_path, link):
     print('download_img from ', link)
@@ -35,4 +38,3 @@ if __name__ == "__main__":
                 url = get_url(yy, mm, ss)
                 save_path = os.path.expanduser(f'~/.hoshino/tmp/{get_rank_id(yy, mm, ss)}')
                 download_img(save_path, url)
-                

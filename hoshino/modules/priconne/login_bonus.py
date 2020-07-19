@@ -7,9 +7,9 @@ sv = Service('pcr-login-bonus', bundle='pcr娱乐', help_='[星乃签到] 给主
 
 lmt = DailyNumberLimiter(1)
 login_presents = [
-    '扫荡券×5',  '卢币×1000', '普通EXP药水×5',  '宝石×50',  '玛那×3000',
-    '扫荡券×10', '卢币×1500', '普通EXP药水×15', '宝石×80',  '白金转蛋券×1',
-    '扫荡券×15', '卢币×2000', '上级精炼石×3',   '宝石×100', '白金转蛋券×1',
+    '扫荡券×5', '卢币×1000', '普通EXP药水×5', '宝石×50', '玛那×3000',
+    '扫荡券×10', '卢币×1500', '普通EXP药水×15', '宝石×80', '白金转蛋券×1',
+    '扫荡券×15', '卢币×2000', '上级精炼石×3', '宝石×100', '白金转蛋券×1',
 ]
 todo_list = [
     '找伊绪老师上课',
@@ -43,6 +43,7 @@ todo_list = [
     '搓一把日麻'
 ]
 
+
 @sv.on_fullmatch(('签到', '盖章', '妈', '妈?', '妈妈', '妈!', '妈！', '妈妈！'), only_to_me=True)
 async def give_okodokai(bot, ev: CQEvent):
     uid = ev.user_id
@@ -52,4 +53,6 @@ async def give_okodokai(bot, ev: CQEvent):
     lmt.increase(uid)
     present = random.choice(login_presents)
     todo = random.choice(todo_list)
-    await bot.send(ev, f'\nおかえりなさいませ、主さま{R.img("priconne/kokkoro_stamp.png").cqcode}\n{present}を獲得しました\n私からのプレゼントです\n主人今天要{todo}吗？', at_sender=True)
+    await bot.send(ev,
+                   f'\nおかえりなさいませ、主さま{R.img("priconne/kokkoro_stamp.png").cqcode}\n{present}を獲得しました\n私からのプレゼントです\n主人今天要{todo}吗？',
+                   at_sender=True)

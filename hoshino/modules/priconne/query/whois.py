@@ -6,6 +6,7 @@ from . import sv
 
 lmt = FreqLimiter(5)
 
+
 @sv.on_suffix(('是谁', '是誰'))
 @sv.on_prefix(('谁是', '誰是'))
 async def whois(bot, ev: CQEvent):
@@ -24,7 +25,7 @@ async def whois(bot, ev: CQEvent):
     if id_ == chara.UNKNOWN:
         id_, guess_name, confi = chara.guess_id(name)
     c = chara.fromid(id_)
-    
+
     msg = ''
     if confi < 100:
         lmt.start_cd(uid, 120)

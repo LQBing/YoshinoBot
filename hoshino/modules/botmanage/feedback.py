@@ -9,6 +9,7 @@ _max = 1
 lmt = DailyNumberLimiter(_max)
 EXCEED_NOTICE = f'您今天已经喝过{_max}杯了，请明早5点后再来！'
 
+
 @sv.on_prefix('来杯咖啡')
 async def feedback(bot, ev: CQEvent):
     uid = ev.user_id

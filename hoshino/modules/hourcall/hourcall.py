@@ -6,12 +6,13 @@ from hoshino import Service
 sv = Service('hourcall', enable_on_default=False, help_='时报')
 tz = pytz.timezone('Asia/Shanghai')
 
+
 def get_hour_call():
     """挑出一组时报，每日更换，一日之内保持相同"""
     cfg = hoshino.config.hourcall
     now = datetime.now(tz)
     hc_groups = cfg.HOUR_CALLS_ON
-    g = hc_groups[ now.day % len(hc_groups) ]
+    g = hc_groups[now.day % len(hc_groups)]
     return cfg.HOUR_CALLS[g]
 
 

@@ -16,7 +16,7 @@ from datetime import datetime
 import hoshino
 from hoshino.typing import CQEvent
 
-#===================== block list =======================#
+# ===================== block list =======================#
 _black_group = {}  # Dict[group_id, expr_time]
 _black_user = {}  # Dict[user_id, expr_time]
 
@@ -44,7 +44,7 @@ def check_block_user(user_id):
     return bool(user_id in _black_user)
 
 
-#========================================================#
+# ========================================================#
 
 
 def get_user_priv(ev: CQEvent):

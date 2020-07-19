@@ -94,6 +94,7 @@ class Service:
     储存位置：
     `~/.hoshino/service_config/{ServiceName}.json`
     """
+
     def __init__(self, name, use_priv=None, manage_priv=None, enable_on_default=None, visible=None,
                  help_=None, bundle=None):
         """
@@ -154,8 +155,7 @@ class Service:
             f'Service {self.name} is disabled at group {group_id}')
 
     def check_enabled(self, group_id):
-        return bool( (group_id in self.enable_group) or (self.enable_on_default and group_id not in self.disable_group))
-
+        return bool((group_id in self.enable_group) or (self.enable_on_default and group_id not in self.disable_group))
 
     def _check_all(self, ev: CQEvent):
         gid = ev.group_id
@@ -178,7 +178,6 @@ class Service:
                 gl[g].append(sid)
         return gl
 
-
     def on_message(self, event='group') -> Callable:
         def deco(func) -> Callable:
             @wraps(func)
@@ -187,27 +186,31 @@ class Service:
                     try:
                         return await func(self.bot, ctx)
                     except Exception as e:
-                        self.logger.error(f'{type(e)} occured when {func.__name__} handling message {ctx["message_id"]}.')
+                        self.logger.error(
+                            f'{type(e)} occured when {func.__name__} handling message {ctx["message_id"]}.')
                         self.logger.exception(e)
                     return
-            return self.bot.on_message(event)(wrapper)
-        return deco
 
+            return self.bot.on_message(event)(wrapper)
+
+        return deco
 
     def on_prefix(self, prefix, only_to_me=False) -> Callable:
         if isinstance(prefix, str):
-            prefix = (prefix, )
+            prefix = (prefix,)
+
         def deco(func) -> Callable:
             sf = ServiceFunc(self, func, only_to_me)
             for p in prefix:
                 trigger.prefix.add(p, sf)
             return func
+
         return deco
-    
-    
+
     def on_fullmatch(self, word, only_to_me=False) -> Callable:
         if isinstance(word, str):
-            word = (word, )
+            word = (word,)
+
         def deco(func) -> Callable:
             @wraps(func)
             async def wrapper(bot: HoshinoBot, event: CQEvent):
@@ -215,6 +218,7 @@ class Service:
                     self.logger.info(f'Message {event.message_id} is ignored by fullmatch condition.')
                     return
                 return await func(bot, event)
+
             sf = ServiceFunc(self, wrapper, only_to_me)
             for w in word:
                 trigger.prefix.add(w, sf)
@@ -228,40 +232,43 @@ class Service:
             # async def func(...):
             #   ...
             # ```
-        return deco
 
+        return deco
 
     def on_suffix(self, suffix, only_to_me=False) -> Callable:
         if isinstance(suffix, str):
-            suffix = (suffix, )
+            suffix = (suffix,)
+
         def deco(func) -> Callable:
             sf = ServiceFunc(self, func, only_to_me)
             for s in suffix:
                 trigger.suffix.add(s, sf)
             return func
-        return deco
 
+        return deco
 
     def on_keyword(self, keywords, only_to_me=False) -> Callable:
         if isinstance(keywords, str):
-            keywords = (keywords, )
+            keywords = (keywords,)
+
         def deco(func) -> Callable:
             sf = ServiceFunc(self, func, only_to_me)
             for kw in keywords:
                 trigger.keyword.add(kw, sf)
             return func
-        return deco
 
+        return deco
 
     def on_rex(self, rex: Union[str, re.Pattern], only_to_me=False) -> Callable:
         if isinstance(rex, str):
             rex = re.compile(rex)
+
         def deco(func) -> Callable:
             sf = ServiceFunc(self, func, only_to_me)
             trigger.rex.add(rex, sf)
             return func
-        return deco
 
+        return deco
 
     def on_command(self, name, *, only_to_me=False, deny_tip=None, **kwargs) -> Callable:
         kwargs['only_to_me'] = only_to_me
@@ -288,11 +295,13 @@ class Service:
                     except (_PauseException, _FinishException, SwitchException) as e:
                         raise e
                     except Exception as e:
-                        self.logger.error(f'{type(e)} occured when {func.__name__} handling message {session.ctx["message_id"]}.')
+                        self.logger.error(
+                            f'{type(e)} occured when {func.__name__} handling message {session.ctx["message_id"]}.')
                         self.logger.exception(e)
-            return nonebot.on_command(name, **kwargs)(wrapper)
-        return deco
 
+            return nonebot.on_command(name, **kwargs)(wrapper)
+
+        return deco
 
     def on_natural_language(self, keywords=None, **kwargs) -> Callable:
         def deco(func) -> Callable:
@@ -306,16 +315,19 @@ class Service:
                         )
                         return ret
                     except Exception as e:
-                        self.logger.error(f'{type(e)} occured when {func.__name__} handling message {session.ctx["message_id"]}.')
+                        self.logger.error(
+                            f'{type(e)} occured when {func.__name__} handling message {session.ctx["message_id"]}.')
                         self.logger.exception(e)
-            return nonebot.on_natural_language(keywords, **kwargs)(wrapper)
-        return deco
 
+            return nonebot.on_natural_language(keywords, **kwargs)(wrapper)
+
+        return deco
 
     def scheduled_job(self, *args, **kwargs) -> Callable:
         kwargs.setdefault('timezone', pytz.timezone('Asia/Shanghai'))
         kwargs.setdefault('misfire_grace_time', 60)
         kwargs.setdefault('coalesce', True)
+
         def deco(func: Callable[[], Any]) -> Callable:
             @wraps(func)
             async def wrapper():
@@ -327,14 +339,15 @@ class Service:
                 except Exception as e:
                     self.logger.error(f'{type(e)} occured when doing scheduled job {func.__name__}.')
                     self.logger.exception(e)
-            return nonebot.scheduler.scheduled_job(*args, **kwargs)(wrapper)
-        return deco
 
+            return nonebot.scheduler.scheduled_job(*args, **kwargs)(wrapper)
+
+        return deco
 
     async def broadcast(self, msgs, TAG='', interval_time=0.5, randomiser=None):
         bot = self.bot
         if isinstance(msgs, (str, MessageSegment, Message)):
-            msgs = (msgs, )
+            msgs = (msgs,)
         glist = await self.get_enable_groups()
         for gid, selfids in glist.items():
             try:
@@ -349,7 +362,6 @@ class Service:
                 self.logger.error(f"群{gid} 投递{TAG}失败：{type(e)}")
                 self.logger.exception(e)
 
-
     def on_request(self, *events):
         def deco(func):
             @wraps(func)
@@ -357,10 +369,11 @@ class Service:
                 if not self.check_enabled(session.event.group_id):
                     return
                 return await func(session)
+
             return nonebot.on_request(*events)(wrapper)
+
         return deco
-    
-    
+
     def on_notice(self, *events):
         def deco(func):
             @wraps(func)
@@ -368,16 +381,19 @@ class Service:
                 if not self.check_enabled(session.event.group_id):
                     return
                 return await func(session)
-            return nonebot.on_notice(*events)(wrapper)
-        return deco
 
+            return nonebot.on_notice(*events)(wrapper)
+
+        return deco
 
 
 sulogger = log.new_logger('sucmd')
 
+
 def sucmd(name, force_private=True, **kwargs) -> Callable:
     kwargs['privileged'] = True
     kwargs['only_to_me'] = False
+
     def deco(func) -> Callable:
         @wraps(func)
         async def wrapper(session: CommandSession):
@@ -393,5 +409,7 @@ def sucmd(name, force_private=True, **kwargs) -> Callable:
             except Exception as e:
                 sulogger.error(f'{type(e)} occured when {func.__name__} handling message {session.event.message_id}.')
                 sulogger.exception(e)
+
         return nonebot.on_command(name, **kwargs)(wrapper)
+
     return deco

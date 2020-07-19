@@ -9,6 +9,7 @@ sv = Service('dice', help_='''
 [.r 3d12] 掷3次12面骰子
 '''.strip())
 
+
 async def do_dice(bot, ev, num, min_, max_, opr, offset, TIP="的掷骰结果是："):
     if num == 0:
         await bot.send(ev, '咦？我骰子呢？')
@@ -31,7 +32,9 @@ async def do_dice(bot, ev, num, min_, max_, opr, offset, TIP="的掷骰结果是
     await bot.send(ev, msg, at_sender=True)
 
 
-@sv.on_rex(re.compile(r'^\.r\s*((?P<num>\d{0,2})d((?P<min>\d{1,4})~)?(?P<max>\d{0,4})((?P<opr>[+-])(?P<offset>\d{0,5}))?)?\b', re.I))
+@sv.on_rex(
+    re.compile(r'^\.r\s*((?P<num>\d{0,2})d((?P<min>\d{1,4})~)?(?P<max>\d{0,4})((?P<opr>[+-])(?P<offset>\d{0,5}))?)?\b',
+               re.I))
 async def dice(bot, ev):
     num, min_, max_, opr, offset = 1, 1, 100, 1, 0
     match = ev['match']

@@ -40,7 +40,7 @@ class BaseSpider(abc.ABC):
     async def get_update(cls) -> List[Item]:
         resp = await cls.get_response()
         items = await cls.get_items(resp)
-        updates = [ i for i in items if i.idx not in cls.idx_cache ]
+        updates = [i for i in items if i.idx not in cls.idx_cache]
         if updates:
             cls.idx_cache = set(i.idx for i in items)
             cls.item_cache = items
@@ -51,20 +51,18 @@ class BaseSpider(abc.ABC):
         return f'{cls.src_name}新闻\n' + '\n'.join(map(lambda i: i.content, items))
 
 
-
 class SonetSpider(BaseSpider):
     url = "http://www.princessconnect.so-net.tw/news/"
     src_name = "台服官网"
 
     @staticmethod
-    async def get_items(resp:aiorequests.AsyncResponse):
+    async def get_items(resp: aiorequests.AsyncResponse):
         soup = BeautifulSoup(await resp.text, 'lxml')
         return [
             Item(idx=dd.a["href"],
                  content=f"{dd.text}\n▲www.princessconnect.so-net.tw{dd.a['href']}"
-            ) for dd in soup.find_all("dd")
+                 ) for dd in soup.find_all("dd")
         ]
-
 
 
 class BiliSpider(BaseSpider):
@@ -72,11 +70,11 @@ class BiliSpider(BaseSpider):
     src_name = "B服官网"
 
     @staticmethod
-    async def get_items(resp:aiorequests.AsyncResponse):
+    async def get_items(resp: aiorequests.AsyncResponse):
         content = await resp.json()
         items = [
             Item(idx=n["id"],
                  content="{title}\n▲game.bilibili.com/pcr/news.html#detail={id}".format_map(n)
-            ) for n in content["data"]
+                 ) for n in content["data"]
         ]
         return items
