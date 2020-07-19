@@ -168,3 +168,14 @@ class DailyNumberLimiter:
 
     def reset(self, key):
         self.count[key] = 0
+
+
+def get_environ(var_name, default_value=''):
+    return os.environ.get(var_name) if os.environ.get(var_name) else default_value
+
+
+def get_list_environ(var_name, default_value, delimiter=','):
+    if os.environ.get(var_name):
+        return os.environ.get(var_name).split(delimiter)
+    else:
+        return default_value

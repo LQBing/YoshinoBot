@@ -1,7 +1,6 @@
-import importlib
-import os
-from hoshino import log
 from nonebot.default_config import *
+import importlib
+from hoshino import log
 from .__bot__ import *
 
 # check correctness
