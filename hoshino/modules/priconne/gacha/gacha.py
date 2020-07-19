@@ -8,9 +8,6 @@ class Gacha(object):
 
     def __init__(self, pool_name: str = "MIX"):
         super().__init__()
-        self.load_pool(pool_name)
-
-    def load_pool(self, pool_name: str):
         config = util.load_config(__file__)
         pool = config[pool_name]
         self.up_prob = pool["up_prob"]
