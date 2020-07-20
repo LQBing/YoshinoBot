@@ -11,6 +11,7 @@ from . import hourcall
 from . import mikan
 from . import priconne
 from . import twitter
+from . import mantra
 
 # check correctness
 RES_DIR = os.path.expanduser(RES_DIR)
