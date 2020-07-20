@@ -22,7 +22,7 @@ def mantra_generator():
         random.shuffle(file_list)
         for filename in file_list:
             if os.path.isfile(os.path.join(mantra_folder, filename)):
-                yield R.img('mantra/', filename)
+                yield R.img('mantra/', filename.replace('\\', '/'))
 
 
 mantra_generator = mantra_generator()
@@ -33,7 +33,7 @@ def get_mantra():
 
 
 @sv.on_rex(KEYWORD)
-async def setu(bot, ev):
+async def mantra(bot, ev):
     """随机叫一份真言语录，对每个用户有冷却时间"""
     uid = ev['user_id']
     if not _n_limit.check(uid):
@@ -45,7 +45,7 @@ async def setu(bot, ev):
     _f_limit.start_cd(uid)
     _n_limit.increase(uid)
 
-    # conditions all ok, send a setu.
+    # conditions all ok, send a mantra.
     pic = get_mantra()
     try:
         await bot.send(ev, pic.cqcode)

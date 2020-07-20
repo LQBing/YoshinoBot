@@ -54,4 +54,5 @@ MODULES_ON = {
     # 'translate',
     # 'twitter',
     'yobot',
+    'mantra',
 }
