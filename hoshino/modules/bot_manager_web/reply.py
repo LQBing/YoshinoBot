@@ -1,5 +1,5 @@
 import nonebot
-from hoshino.config.bot_manager_web import DOMAIN_URL
+from hoshino.config.bot_manager_web import PUBLIC_ADDRESS
 
 bot = nonebot.get_bot()
 
@@ -8,4 +8,4 @@ bot = nonebot.get_bot()
 async def setting(ctx):
     message = ctx['raw_message']
     if message == 'bot设置':
-        await bot.send(ctx, f'{DOMAIN_URL}/manage', at_sender=False)
+        await bot.send(ctx, f'{PUBLIC_ADDRESS}/manage', at_sender=False)
