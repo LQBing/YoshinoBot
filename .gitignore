@@ -3,11 +3,14 @@ config.py
 config.json
 #hoshino/config/
 local_coolq_config/
+yobot_data
 
 # Database
 db.json
 database.json
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 res/
 

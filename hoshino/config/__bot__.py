@@ -42,6 +42,7 @@ RES_URL = get_environ('RES_URL', 'http://127.0.0.1:5000/static/')
 # 切忌一次性开启多个
 MODULES_ON = {
     'bot_manager',
+    'bot_manager_web',
     'dice',
     'group_master',
     # 'hourcall',
@@ -52,6 +53,5 @@ MODULES_ON = {
     # 'setu',
     # 'translate',
     # 'twitter',
-    # 'yobot',
-    'bot_manager_web',
+    'yobot',
 }
