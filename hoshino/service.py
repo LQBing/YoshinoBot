@@ -179,7 +179,7 @@ class Service:
                 gl[g].append(sid)
         return gl
 
-    def on_message(self, event='group') -> Callable:
+    def on_message(self, event=None) -> Callable:
         def deco(func) -> Callable:
             @wraps(func)
             async def wrapper(ctx):
@@ -271,15 +271,15 @@ class Service:
 
         return deco
 
-    def on_command(self, name, *, only_to_me=False, deny_tip=None, **kwargs) -> Callable:
+    def on_command(self, name, *, only_to_me=False, deny_tip=None, event='group', **kwargs) -> Callable:
         kwargs['only_to_me'] = only_to_me
 
         def deco(func) -> Callable:
             @wraps(func)
             async def wrapper(session):
-                if session.ctx['message_type'] != 'group':
+                if session.ctx['message_type'] != event and event:
                     return
-                if not self.check_enabled(session.ctx['group_id']):
+                if not self.check_enabled(session.ctx.get['group_id']):
                     self.logger.debug(
                         f'Message {session.ctx["message_id"]} is command of a disabled service, ignored.'
                     )

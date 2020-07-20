@@ -12,7 +12,7 @@ async def deepchat(bot, ctx):
         return
     payload = {
         "msg": msg,
-        "group": ctx['group_id'],
+        "group": ctx.get['group_id'],
         "qq": ctx['user_id']
     }
     sv.logger.debug(payload)

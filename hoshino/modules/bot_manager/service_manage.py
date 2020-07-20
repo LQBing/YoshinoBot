@@ -24,7 +24,7 @@ async def lssv(session: CommandSession):
         if not gid:
             session.finish('Usage: -g|--group <group_id> [-a|--all]')
     else:
-        gid = session.ctx['group_id']
+        gid = session.ctx.get['group_id']
 
     msg = [f"群{gid}服务一览："]
     svs = Service.get_loaded_services().values()
@@ -54,7 +54,7 @@ async def switch_service(session: CommandSession, turn_on: bool):
         names = session.current_arg_text.split()
         if not names:
             session.finish(f"空格后接要{action_tip}的服务名", at_sender=True)
-        group_id = session.ctx['group_id']
+        group_id = session.ctx.get['group_id']
         svs = Service.get_loaded_services()
         succ, notfound = [], []
         for name in names:
