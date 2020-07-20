@@ -132,4 +132,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+.gitignore
+
+docker-compose.yml
 .env

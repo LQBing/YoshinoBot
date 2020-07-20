@@ -6,4 +6,4 @@ class arena:
 
 
 class gacha:
-    ENABLE_SILENCE = get_bool_environ('ENABLE_SILENCE')
+    ENABLE_SILENCE = get_bool_environ('ENABLE_SILENCE', True)
