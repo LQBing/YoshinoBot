@@ -7,7 +7,7 @@ import os
 """
 
 # hoshino监听的端口与ip
-PORT = int(get_environ('PORT', 8080))
+PORT = int(get_environ('PORT', 8000))
 HOST = get_environ('HOST', '0.0.0.0')  # Windows部署使用此条配置
 # HOST = '172.17.0.1'   # linux + docker使用此条配置
 # docker桥的ip可能随环境不同而有变化
@@ -20,7 +20,7 @@ DEBUG = True if os.environ.get('DEBUG') else False  # 调试模式
 SUPERUSERS = get_list_environ('SUPERUSERS', [10000])  # 填写超级用户的QQ号，可填多个用半角逗号","隔开
 NICKNAME = get_environ('NICKNAME', '')  # 机器人的昵称。呼叫昵称等同于@bot，可用元组配置多个昵称
 
-COMMAND_START = {get_environ('COMMAND_START', '#')}  # 命令前缀（空字符串匹配任何消息）
+COMMAND_START = {get_environ('COMMAND_START', '')}  # 命令前缀（空字符串匹配任何消息）
 COMMAND_SEP = set()  # 命令分隔符（hoshino不需要该特性，保持为set()即可）
 
 USE_CQPRO = False  # 是否使用Pro版酷Q功能

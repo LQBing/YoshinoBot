@@ -1,7 +1,7 @@
 # Config Files
 config.py
 config.json
-hoshino/config/
+#hoshino/config/
 local_coolq_config/
 
 # Database
@@ -10,10 +10,6 @@ database.json
 *.db
 *.sqlite
 res/
-img/
-imgs/
-image/
-images/
 
 # 非公开的组件
 # hoshino/modules/deepchat/

@@ -179,3 +179,10 @@ def get_list_environ(var_name, default_value, delimiter=','):
         return os.environ.get(var_name).split(delimiter)
     else:
         return default_value
+
+
+def get_bool_environ(var_name, default_value=False):
+    if default_value:
+        return False if os.environ.get(var_name) else True
+    else:
+        return True if os.environ.get(var_name) else False

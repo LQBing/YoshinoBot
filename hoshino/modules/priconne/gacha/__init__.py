@@ -2,7 +2,7 @@ import os
 import random
 from collections import defaultdict
 
-from hoshino import Service, priv, util
+from hoshino import Service, priv, util, config
 from hoshino.typing import *
 from hoshino.util import DailyNumberLimiter, concat_pic, pic2b64, silence
 
@@ -118,9 +118,9 @@ async def gacha_1(bot, ev: CQEvent):
     res = f'{chara.name} {"★" * chara.star}'
     if sv.bot.config.USE_CQPRO:
         res = f'{chara.icon.cqcode} {res}'
-
-    await silence(ev, silence_time)
-    await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}', at_sender=True)
+    if config.priconne.gacha.ENABLE_SILENCE:
+        await silence(ev, silence_time)
+        await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}', at_sender=True)
 
 
 @sv.on_prefix(gacha_10_aliases, only_to_me=True)
@@ -153,8 +153,9 @@ async def gacha_10(bot, ev: CQEvent):
 
     if hiishi >= SUPER_LUCKY_LINE:
         await bot.send(ev, '恭喜海豹！おめでとうございます！')
-    await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}\n', at_sender=True)
-    await silence(ev, silence_time)
+    if config.priconne.gacha.ENABLE_SILENCE:
+        await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}\n', at_sender=True)
+        await silence(ev, silence_time)
 
 
 @sv.on_prefix(gacha_300_aliases, only_to_me=True)
@@ -216,8 +217,9 @@ async def gacha_300(bot, ev: CQEvent):
         msg.append("记忆碎片一大堆！您是托吧？")
 
     await bot.send(ev, '\n'.join(msg), at_sender=True)
-    silence_time = (100 * up + 50 * (up + s3) + 10 * s2 + s1) * 1
-    await silence(ev, silence_time)
+    if config.priconne.gacha.ENABLE_SILENCE:
+        silence_time = (100 * up + 50 * (up + s3) + 10 * s2 + s1) * 1
+        await silence(ev, silence_time)
 
 
 @sv.on_prefix('氪金')
