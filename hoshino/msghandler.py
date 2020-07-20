@@ -1,11 +1,12 @@
 from hoshino import CanceledException, message_preprocessor, trigger
 from hoshino.typing import CQEvent
+from hoshino.config.bot_manager_web import ALLOW_PRIVATE
 
 
 @message_preprocessor
 async def handle_message(bot, event: CQEvent, _):
-    # if event.detail_type != 'group':
-    #     return
+    if not ALLOW_PRIVATE and event.detail_type != 'group':
+        return
 
     for t in trigger.chain:
         sf = t.find_handler(event)
