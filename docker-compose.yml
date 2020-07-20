@@ -8,6 +8,7 @@ services:
       - ./data/miraok/setting.yml:/workdir/plugins/CQHTTPMirai/setting.yml
       - ./data/miraok/device.json:/workdir/device.json
       - ./data/miraok/log:/workdir/log
+      - ./data/miraok/tmp:/tmp
     networks:
       - bot_net
       
@@ -20,6 +21,7 @@ services:
     volumes:
       - ./data/bot/log:/workdir/log
       - ./data/bot/yobot_data:/workdir/hoshino/modules/yobot/yobot/src/client/yobot_data
+      - ./data/bot/static:/workdir/hoshino/modules/yobot/yobot/src/client/public/static/
       - ./data/bot/res:/workdir/res
     networks:
       - bot_net
