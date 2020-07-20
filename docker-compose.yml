@@ -9,8 +9,8 @@ services:
       - ./data/miraok/device.json:/workdir/device.json
       - ./data/miraok/log:/workdir/log
       - ./data/miraok/tmp:/tmp
-      stdin_open: true
-      tty: true
+    stdin_open: true
+    tty: true
     networks:
       - bot_net
       
