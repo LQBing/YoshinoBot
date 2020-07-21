@@ -29,7 +29,9 @@ async def _():
         return
     if session.get('user_ip') == user_ip:
         return
-    return redirect('/login')
+    if request.path.startswith("/manage"):
+        return redirect('/login')
+    return
 
 
 @switcher.route('/login', methods=['GET', 'POST'])
