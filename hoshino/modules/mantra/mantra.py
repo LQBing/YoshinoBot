@@ -8,9 +8,10 @@ from hoshino.util import FreqLimiter, DailyNumberLimiter
 from hoshino.config.mantra import KEYWORD
 
 _max = 50
+_fl = 60
 EXCEED_NOTICE = f'今天艹爷已经迫害过{_max}次了，欢迎明早5点后在继续迫害！'
 _n_limit = DailyNumberLimiter(_max)
-_f_limit = FreqLimiter(60)
+_f_limit = FreqLimiter(_fl)
 
 sv = Service('mantra', manage_priv=priv.SUPERUSER, enable_on_default=True, visible=False)
 mantra_folder = R.img('mantra/').path
@@ -40,8 +41,10 @@ async def mantra(bot, ev):
         await bot.send(ev, EXCEED_NOTICE, at_sender=True)
         return
     if not _f_limit.check(uid):
-        await bot.send(ev, f'您迫害的太频繁了，还没有{_f_limit}秒，爱护小艹人人有责', at_sender=True)
-        return
+        limited = True
+        await bot.send(ev, f'您迫害的太频繁了，距离上次迫害还不到{_fl}秒，爱护小艹人人有责。迫害虽棒可不要贪哦(๑•̀ㅂ•́)و✧', at_sender=True)
+        if limited:
+            return
     _f_limit.start_cd(uid)
     _n_limit.increase(uid)
 
