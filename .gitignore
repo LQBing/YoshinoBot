@@ -132,5 +132,4 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-.env
 /data/
