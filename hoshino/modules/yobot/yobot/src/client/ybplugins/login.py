@@ -32,50 +32,6 @@ def _add_salt_and_hash(raw: str, salt: str):
     return sha256((raw + salt).encode()).hexdigest()
 
 
-def _validate_pwd(password):
-
-    def check_number_exist(password_str):
-        # 判断是否含有数字
-        for c in password_str:
-            if c.isnumeric():
-                return True
-        return False
-
-    def check_alpha_exist(password_str):
-        # 判断是否含有字母
-        for c in password_str:
-            if c.isalpha():
-                return True
-        return False
-
-    # 密码强度
-    strength_level = 0
-
-    # 判断密码强度
-    # 规则1：密码长度大于8
-    if len(password) >= 8:
-        strength_level += 1
-    else:
-        print('密码长度要求至少8位')
-
-    # 规则2：包含数字
-    if check_number_exist(password):
-        strength_level += 1
-    else:
-        print('密码必须包含数字')
-
-    # 规则3：包含字母
-    if check_alpha_exist(password):
-        strength_level += 1
-    else:
-        print('密码必须包含字母')
-
-    if strength_level == 3:
-        return True
-    else:
-        return False
-
-
 class Login:
     Passive = True
     Active = True
@@ -236,7 +192,7 @@ class Login:
         if user.privacy >= MAX_TRY_TIMES:
             raise ExceptionWithAdvice(
                 '您的密码错误次数过多，账号已锁定',
-                f'如果忘记密码，请私聊机器人“{self._get_prefix()}解除锁定”后，重新登录'
+                f'请私聊机器人“{self._get_prefix()}重置密码”后，重新登录'
             )
         if not user.password == _add_salt_and_hash(pwd, user.salt):
             user.privacy += 1  # 密码错误次数+1
@@ -527,11 +483,7 @@ class Login:
                     raise Exception("请先加公会")
                 form = await request.form
                 pwd = form["pwd"]
-                if not _validate_pwd(pwd):
-                    return await render_template(
-                        'password.html',
-                        error="密码必须6位以上且必须包含数字和字母",
-                    )
+                # self._validate_pwd(pwd)
                 user.password = _add_salt_and_hash(pwd, user.salt)
                 user.privacy = 0
                 user.must_change_password = False
