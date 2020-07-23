@@ -1,8 +1,6 @@
-import pytz
-from datetime import datetime
 from hoshino import Service, R
 
-sv = Service('buy_potion_reminder', enable_on_default=False, help_='买药提醒')
+sv = Service('buy_potion_reminder', enable_on_default=False, help_='买药提醒', bundle='帮助pcr订阅')
 
 
 @sv.scheduled_job('cron', hour='*/6')
