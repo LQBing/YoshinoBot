@@ -13,7 +13,7 @@ EXCEED_NOTICE = f'今天艹爷已经迫害过{_max}次了，欢迎明早5点后�
 _n_limit = DailyNumberLimiter(_max)
 _f_limit = FreqLimiter(_fl)
 
-sv = Service('mantra', manage_priv=priv.SUPERUSER, enable_on_default=True, visible=False)
+sv = Service('mantra', manage_priv=priv.SUPERUSER, enable_on_default=False, visible=False)
 mantra_folder = R.img('mantra/').path
 
 
