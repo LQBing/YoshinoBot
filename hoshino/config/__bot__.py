@@ -55,4 +55,5 @@ MODULES_ON = {
     # 'twitter',
     'yobot',
     'mantra',
+    'buy_potion_reminder',
 }
