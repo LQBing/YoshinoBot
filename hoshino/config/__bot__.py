@@ -23,7 +23,7 @@ NICKNAME = get_environ('NICKNAME', '')  # 机器人的昵称。呼叫昵称等�
 COMMAND_START = {get_environ('COMMAND_START', '')}  # 命令前缀（空字符串匹配任何消息）
 COMMAND_SEP = set()  # 命令分隔符（hoshino不需要该特性，保持为set()即可）
 
-USE_CQPRO = False  # 是否使用Pro版酷Q功能
+USE_CQPRO = True if os.environ.get('USE_CQPRO') else False   # 是否使用Pro版酷Q功能
 
 # 发送图片的协议
 # 可选 http, file, base64
