@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 
 from hoshino import util
-from .dao.sqlitedao import ClanDao, MemberDao, BattleDao
+from .dao import ClanDao, MemberDao, BattleDao
 from .exception import NotFoundError
 
 

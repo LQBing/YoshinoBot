@@ -4,7 +4,7 @@ from hoshino.typing import *
 from .battlemaster import BattleMaster as Master
 from .const import *
 
-sv = Service('clanbattlev3', bundle='pcr会战', help_='Hoshino会战管理v3（建设中）')
+sv = Service('clanbattlev3', bundle='pcr会战', help_='Hoshino会战管理v3（建设中）', visible=False)
 
 ERROR_CLAN_NOTFOUND = f'公会未初始化：请群管理发送"建会日/台/B服"'
 ERROR_ZERO_MEMBER = f'公会内无成员：请使用"入会"或"批量入会"以添加'
