@@ -1,3 +1,4 @@
+import os
 import json
 import nonebot
 import hoshino
@@ -5,6 +6,9 @@ from datetime import timedelta
 from hoshino import Service
 from quart import request, session, redirect, Blueprint
 from .http_handler import render_template, get_random_str
+
+# 访问bot manager web的密码。公网服务没有身份验证是很危险的，密码建议自行修改！！！
+PASSWORD = os.environ.get('BOT_MANAGER_WEB_PASSWORD') if os.environ.get('BOT_MANAGER_WEB_PASSWORD') else '987654321'
 
 switcher = Blueprint('switcher', __name__, static_folder='statics', static_url_path='/statics', url_prefix="/manage")
 bot = nonebot.get_bot()
