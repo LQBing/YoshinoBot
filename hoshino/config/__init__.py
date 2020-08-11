@@ -4,7 +4,6 @@ from hoshino import log
 from .__bot__ import *
 
 # import configs
-from . import bot_manager_web
 from . import deepchat
 from . import groupmaster
 from . import hourcall

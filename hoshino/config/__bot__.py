@@ -1,4 +1,4 @@
-from hoshino.util import get_list_environ, get_environ
+from hoshino.util import get_list_environ, get_environ, get_bool_environ
 import os
 
 """这是一份实例配置文件
@@ -23,7 +23,7 @@ NICKNAME = get_environ('NICKNAME', '')  # 机器人的昵称。呼叫昵称等�
 COMMAND_START = {get_environ('COMMAND_START', '')}  # 命令前缀（空字符串匹配任何消息）
 COMMAND_SEP = set()  # 命令分隔符（hoshino不需要该特性，保持为set()即可）
 
-USE_CQPRO = True if os.environ.get('USE_CQPRO') else False   # 是否使用Pro版酷Q功能
+USE_CQPRO = True if os.environ.get('USE_CQPRO') else False  # 是否使用Pro版酷Q功能
 
 # 发送图片的协议
 # 可选 http, file, base64
@@ -36,6 +36,10 @@ RES_DIR = get_environ('RES_DIR', r'./res/')
 # 使用http协议时需填写，原则上该url应指向RES_DIR目录
 RES_URL = get_environ('RES_URL', 'http://127.0.0.1:5000/static/')
 
+# 允许私聊
+ALLOW_PRIVATE = get_bool_environ('ALLOW_PRIVATE', False)
+# ICP内容
+ICP_CONTENT = get_environ('ICP_CONTENT')
 # 启用的模块
 # 初次尝试部署时请先保持默认
 # 如欲启用新模块，请认真阅读部署说明，逐个启用逐个配置

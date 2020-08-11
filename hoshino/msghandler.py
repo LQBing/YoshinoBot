@@ -1,6 +1,6 @@
 from hoshino import CanceledException, message_preprocessor, trigger
 from hoshino.typing import CQEvent
-from hoshino.config.bot_manager_web import ALLOW_PRIVATE
+from hoshino.config import ALLOW_PRIVATE
 
 
 @message_preprocessor
