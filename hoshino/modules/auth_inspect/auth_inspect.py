@@ -10,7 +10,7 @@ from urllib.parse import urljoin
 sv_help = '''
 [查询授权] 查询本群授权剩余时间
 '''.strip()
-sv = Service('auth_inspect', manage_priv=priv.SUPERUSER, enable_on_default=True, help_=sv_help, bundle='授权')
+sv = Service('auth_inspect', manage_priv=priv.SUPERUSER, enable_on_default=False, help_=sv_help, bundle='授权')
 
 
 def auth_data_to_dhms(data):
