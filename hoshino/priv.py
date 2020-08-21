@@ -73,6 +73,6 @@ def check_priv(ev: CQEvent, require: int) -> bool:
     if ev['message_type'] == 'group':
         return bool(get_user_priv(ev) >= require)
     else:
-        return hoshino.config.bot_manager_web.ALLOW_PRIVATE
+        return hoshino.config.ALLOW_PRIVATE
         # return False  # 不允许私聊
         # return True  # 允许私聊
