@@ -99,7 +99,7 @@ def is_npc(id_):
     if id_ in UnavailableChara:
         return True
     else:
-        return not ((1000 < id_ < 1200) or (1800 < id_ < 1900))
+        return not ((1000 < id_ < 1200) or (1700 < id_ < 1900))
 
 
 def gen_team_pic(team, size=64, star_slot_verbose=True):
@@ -197,10 +197,23 @@ class Chara:
         return pic
 
 
-@sucmd('reload-pcr-chara', force_private=False, aliases=('重载角色花名册',))
+@sucmd('reload-pcr-chara', force_private=False, aliases=('重载花名册', ))
 async def reload_pcr_chara(session: CommandSession):
     try:
         roster.update()
+        await session.send('ok')
+    except Exception as e:
+        logger.exception(e)
+        await session.send(f'Error: {type(e)}')
+
+@sucmd('download-pcr-chara-icon', force_private=False, aliases=('下载角色头像'))
+async def download_pcr_chara_icon(session: CommandSession):
+    try:
+        id_ = roster.get_id(session.current_arg_text.strip())
+        assert id_ != UNKNOWN, '未知角色名'
+        download_chara_icon(id_, 6)
+        download_chara_icon(id_, 3)
+        download_chara_icon(id_, 1)
         await session.send('ok')
     except Exception as e:
         logger.exception(e)
