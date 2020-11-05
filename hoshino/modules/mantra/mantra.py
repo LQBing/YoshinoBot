@@ -14,16 +14,19 @@ _n_limit = DailyNumberLimiter(_max)
 _f_limit = FreqLimiter(_fl)
 
 sv = Service('mantra', manage_priv=priv.SUPERUSER, enable_on_default=False, visible=False)
-mantra_folder = R.img('mantra/').path
+
+mantra_folders = dict()
+for i in MANTRA_MATRIX:
+    mantra_folders[i] = os.path.join(R.img('mantra/').path, MANTRA_MATRIX[i]['path'])
 
 
 def mantra_generator(name):
     while True:
-        file_list = os.listdir(mantra_folder)
+        file_list = os.listdir(mantra_folders[name])
         random.shuffle(file_list)
         for filename in file_list:
-            if os.path.isfile(os.path.join(mantra_folder, MANTRA_MATRIX[name]['path'], filename.replace('\\', '/'))):
-                yield R.img(os.path.join('mantra/', MANTRA_MATRIX[name]['path'], filename.replace('\\', '/')))
+            if os.path.isfile(os.path.join(mantra_folders[name], filename).replace('\\', '/')):
+                yield R.img(os.path.join('mantra/', MANTRA_MATRIX[name]['path'], filename).replace('\\', '/'))
 
 
 mantra_generators = dict()
@@ -38,8 +41,9 @@ def get_mantra(name):
 
 @sv.on_fullmatch(MANTRA_MATRIX)
 async def mantra(bot, ev):
-    name = util.normalize_str(ev.message.extract_plain_text())
     """随机叫一份真言语录，对每个用户有冷却时间"""
+    # 获取语录名
+    name = ev.raw_message
     uid = ev['user_id']
     if not _n_limit.check(uid):
         await bot.send(ev, EXCEED_NOTICE, at_sender=True)
@@ -60,6 +64,6 @@ async def mantra(bot, ev):
     except CQHttpError:
         sv.logger.error(f"发送图片{pic.path}失败")
         try:
-            await bot.send(ev, '太艹了，发不出去勒...')
+            await bot.send(ev, '土豆发芽了，图片发不出去勒...')
         except:
-            pass
+            print("too bad, error message send fail")
