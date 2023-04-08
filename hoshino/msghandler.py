@@ -1,34 +1,33 @@
+from nonebot.command import SwitchException
+
 from hoshino import CanceledException, message_preprocessor, trigger
 from hoshino.typing import CQEvent
-from hoshino.config import ALLOW_PRIVATE
 
 
 @message_preprocessor
 async def handle_message(bot, event: CQEvent, _):
-    if not ALLOW_PRIVATE and event.detail_type != 'group':
+
+    if event.detail_type != 'group':
         return
 
     for t in trigger.chain:
-        sf = t.find_handler(event)
-        if sf:
-            trigger_name = t.__class__.__name__
-            break
+        for service_func in t.find_handler(event):
+            if service_func.only_to_me and not event['to_me']:
+                continue  # not to me, ignore.
 
-    if not sf:
-        return  # triggered nothing.
-    sf.sv.logger.info(f'Message {event.message_id} triggered {sf.__name__} by {trigger_name}.')
+            if not service_func.sv._check_all(event):
+                continue  # permission denied.
 
-    if sf.only_to_me and not event['to_me']:
-        return  # not to me, ignore.
-
-    if not sf.sv._check_all(event):
-        return  # permission denied.
-
-    try:
-        await sf.func(bot, event)
-    except CanceledException:
-        raise
-    except Exception as e:
-        sf.sv.logger.error(f'{type(e)} occured when {sf.__name__} handling message {event.message_id}.')
-        sf.sv.logger.exception(e)
-    raise CanceledException(f'Handled by {trigger_name} of Hoshino')
+            service_func.sv.logger.info(f'Message {event.message_id} triggered {service_func.__name__}.')
+            try:
+                await service_func.func(bot, event)
+            except SwitchException:     # the func says: continue to trigger another function.
+                continue
+            except CanceledException:   # the func says: stop triggering.
+                raise
+            except Exception as e:      # other general errors.
+                service_func.sv.logger.error(f'{type(e)} occured when {service_func.__name__} handling message {event.message_id}.')
+                service_func.sv.logger.exception(e)
+            # the func completed successfully, stop triggering. (1 message for 1 function at most.)
+            raise CanceledException('Handled by Hoshino')
+            # exception raised, no need for break

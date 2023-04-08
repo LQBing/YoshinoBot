@@ -4,7 +4,7 @@
     <title>使用手册</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" Content="公会战功能使用手册">
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/github-markdown-css/3.0.1/github-markdown.min.css">
+    <link rel="stylesheet" href="/yobot-depencency/github-markdown-css@3.0.1/github-markdown.css">
     <style>
         .markdown-body {
             box-sizing: border-box;
@@ -47,13 +47,14 @@
     <h2>进行中：成员</h2>
 
     <ul>
-        <li>成员准备挑战 boss 时，需要在群聊中发送<code>申请出刀</code>，当 bot 允许后开始挑战 boss</li>
+        <li>成员准备挑战 boss 时，建议在群聊中发送<code>申请出刀x</code>，意为我正在挑战x王。</li>
+        <li>成员进入挑战后，可以在剩余2s左右暂停，发送<code>报伤害？s？w</code>，意为剩余多少秒打了多少万伤害，方便管理进行指挥。</li>
+        <li>如果出现意外情况挂树了，可以发送<code>挂树</code></li>
+        <li>以上情况均可以通过在群内发送<code>状态</code>知获</li>
         <li>如果挑战 boss 完毕，需要向 bot 上报挑战结果</li>
         <li>如果挑战 boss 不成功，需要向 bot 上报挂树情况或 SL 使用情况</li>
         <li>如果意外掉刀，需要上报一次 0 点伤害的挑战</li>
         <li>成员可以使用预约功能，在 boss 出现时获得 bot 的 at 提醒</li>
-        <li>（可选择执行）如果希望进行合刀筛刀等多人出刀的操作，可以在群聊中发送<code>锁定：留言</code>，然后等待其他成员共同挑战 boss。等到所有挑战完毕后，按结算顺序向 bot 依次上报</li>
-        <li>（可选择执行）上报伤害和预约 boss 时，通过留言功能帮助排刀人员制定计划</li>
     </ul>
 
     <h2>进行中：管理员</h2>
@@ -69,7 +70,6 @@
     <ul>
         <li>如果有人挑战了 boss 却没有上报，可以由他人代理上报</li>
         <li>如果前一个上报数据出错，可以由上报者或管理员发送<code>撤销</code>来撤销</li>
-        <li>如果有人申请了挑战，但没有报伤害也没有报挂树或 SL，其他成员可以在 3 分钟后在群聊中发送<code>解锁</code>来强制解锁</li>
         <li>如果出刀时间在日期变更附近导致未及时上报，需要将伤害上报到前一天的记录中</li>
     </ul>
 

@@ -9,7 +9,7 @@ class ClanBattleError(Exception):
     def message(self):
         return str(self)
 
-    def append(self, msg: str):
+    def append(self, msg:str):
         self._msgs.append(msg)
 
 

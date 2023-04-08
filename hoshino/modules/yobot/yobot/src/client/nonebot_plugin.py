@@ -37,27 +37,43 @@ else:
 
 verinfo = {
     "run-as": "nonebot-plugin",
-    "ver_name": "yobot{}插件版".format(Yobot.Version),
+    "ver_name": "yobot_remix{}插件版".format(Yobot.Version),
 }
 
 cqbot = get_bot()
-bot = Yobot(data_path="./yobot_data",
-            verinfo=verinfo,
-            scheduler=scheduler,
-            quart_app=cqbot.server_app,
-            bot_api=cqbot._api,
-            )
+bot = Yobot(
+    data_path="./yobot_data",
+    verinfo=verinfo,
+    scheduler=scheduler,
+    quart_app=cqbot.server_app,
+    bot_api=cqbot._api,
+)
+
+from hoshino.service import Service
+
+sv = Service("yobot_remix", enable_on_default=True, visible=True)
 
 
-@cqbot.on_message
-async def handle_msg(context):
+@sv.on_message()
+async def handle_msg(cqbot, context):
     if context["message_type"] == "group" or context["message_type"] == "private":
         reply = await bot.proc_async(context.copy())
     else:
         reply = None
     if reply != "" and reply is not None:
-        return {'reply': reply,
-                'at_sender': False}
+        """return {'reply': reply,'at_sender': False}"""
+        await cqbot.send(context, reply, at_sender=False)
+    else:
+        return None
+
+@cqbot.on_message
+async def handle_msg(context):
+    if context["message_type"] == "private":
+        reply = await bot.proc_async(context.copy())
+    else:
+        reply = None
+    if reply != "" and reply is not None:
+        return {"reply": reply, "at_sender": False}
     else:
         return None
 
@@ -73,6 +89,7 @@ async def send_it(func):
         await asyncio.sleep(5)
         await cqbot.send_msg(**kwargs)
 
+
 jobs = bot.active_jobs()
 if jobs:
     for trigger, job in jobs:
@@ -85,5 +102,5 @@ if jobs:
             misfire_grace_time=60,
         )
 
-__plugin_name__ = 'yobot'
-__plugin_usage__ = 'pcr assistant bot'
+__plugin_name__ = "yobot"
+__plugin_usage__ = "pcr assistant bot"

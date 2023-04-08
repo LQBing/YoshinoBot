@@ -14,7 +14,6 @@ _flmt = FreqLimiter(5)
 sv = Service('setu', manage_priv=priv.SUPERUSER, enable_on_default=True, visible=False)
 setu_folder = R.img('setu/').path
 
-
 def setu_gener():
     while True:
         filelist = os.listdir(setu_folder)
@@ -23,9 +22,7 @@ def setu_gener():
             if os.path.isfile(os.path.join(setu_folder, filename)):
                 yield R.img('setu/', filename)
 
-
 setu_gener = setu_gener()
-
 
 def get_setu():
     return setu_gener.__next__()

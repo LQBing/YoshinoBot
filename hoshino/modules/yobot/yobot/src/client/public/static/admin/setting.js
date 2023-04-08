@@ -8,12 +8,14 @@ var vm = new Vue({
         domainApply: false,
         applyName: '',
         loading: false,
+        boss_id_name: {}
     },
     mounted() {
         var thisvue = this;
         axios.get(api_path).then(function (res) {
             if (res.data.code == 0) {
                 thisvue.setting = res.data.settings;
+                thisvue.boss_id_name = res.data.boss_id_name;
             } else {
                 alert(res.data.message);
             }
@@ -23,6 +25,11 @@ var vm = new Vue({
     },
     methods: {
         update: function (event) {
+            var flag = this.check_level_by_cycle()
+            if (!flag) {
+                alert('阶段对应周目错误。\n不同阶段的周目范围不能重叠，且下阶段开始周目必须等于上阶段结束周目加一');
+                return
+            }
             this.setting.web_mode_hint = false;
             axios.put(
                 api_path,
@@ -72,19 +79,31 @@ var vm = new Vue({
                 alert(error);
             });
         },
-        switch_levels: function (area) {
-            if (this.setting.boss[area].length <= 3) {
-                this.setting.boss[area].push([0, 0, 0, 0, 0]);
-            } else {
-                this.setting.boss[area].pop();
-            }
-        },
         comfirm_change_clan_mode: function (event) {
             this.$alert('修改模式后，公会战数据会重置。请不要在公会战期间修改！', '警告', {
                 confirmButtonText: '知道了',
                 type: 'warning',
             });
         },
+        add_level: function (area) {
+            this.setting.boss[area].push([0, 0, 0, 0, 0]);
+            this.setting.level_by_cycle[area].push([0, 0]);
+        },
+        remove_level: function (area) {
+            this.setting.boss[area].pop();
+            this.setting.level_by_cycle[area].pop();
+        },
+        check_level_by_cycle: function () {
+            for (const area in this.setting.level_by_cycle) {
+                var last_level_max = 0
+                for (const level_info of this.setting.level_by_cycle[area]) {
+                    if (level_info[0] != last_level_max + 1 || level_info[0] > level_info[1])
+                        return false
+                    last_level_max = level_info[1]
+                }
+            }
+            return true
+        }
     },
     delimiters: ['[[', ']]'],
 })

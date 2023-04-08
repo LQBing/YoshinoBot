@@ -639,7 +639,7 @@ var vm = new Vue({
                     let dmglist = []
                     for (let i = 0; i < clist.length; i++) {
                         let damage = 0;
-                        if (clist[i].health_ramain != 0) {
+                        if (clist[i].health_remain != 0) {
                             damage = clist[i].damage;
                         } 
                         else if (clist[i+1] && clist[i+1].is_continue) {
@@ -773,7 +773,7 @@ var vm = new Vue({
                     bossDamageList[challenge.boss_num] = dict;
                 }
                 let damage = challenge.damage;
-                if (challenge.health_ramain == 0) {
+                if (challenge.health_remain == 0) {
                     result.tailDamage.push(damage);
                     result.countTail++;
                     dict.tailDamage.push(damage);
@@ -810,7 +810,7 @@ var vm = new Vue({
                             bossDamageList[challenge.boss_num] = dict;
                         }
                         let damage = challenge.damage;
-                        if (challenge.health_ramain == 0) {
+                        if (challenge.health_remain == 0) {
                             result.tailDamage.push(damage);
                             result.countTail++;
                             dict.tailDamage.push(damage);
@@ -954,7 +954,7 @@ var vm = new Vue({
                     label: `${lastCircle}周目${nowBoss}王`
                 });
             }
-            return [challs.map(c => [c.challenge_time * 1000, c.health_ramain]), bosses];
+            return [challs.map(c => [c.challenge_time * 1000, c.health_remain]), bosses];
         },
         bossSumDamageForChart: function(bossDamageList) {
             let l1 = [], l2 = [];
@@ -993,7 +993,7 @@ var vm = new Vue({
                 if (!(name in bossCount)) {
                     bossCount[name] = 0
                 }
-                const isFull = c.health_ramain && !c.is_continue;
+                const isFull = c.health_remain && !c.is_continue;
                 bossCount[name] += isFull ? 1 : 0.5;
             })
             const result = [];

@@ -11,9 +11,7 @@
 import re
 from itertools import zip_longest
 
-from nonebot.message import escape
-
-from hoshino import Service
+from hoshino import Service, util
 from hoshino.typing import CQEvent
 
 sv = Service('pcr-cherugo', bundle='pcr娱乐', help_='''
@@ -81,5 +79,5 @@ async def decherulize(bot, ev: CQEvent):
     if len(s) > 1501:
         await bot.send(ev, '切、切噜太长切不动勒切噜噜...', at_sender=True)
         return
-    msg = '的切噜噜是：\n' + escape(cheru2str(s))
+    msg = '的切噜噜是：\n' + util.filt_message(cheru2str(s))
     await bot.send(ev, msg, at_sender=True)

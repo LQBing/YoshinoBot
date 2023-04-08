@@ -7,25 +7,6 @@ QQid = NewType('QQid', int)
 Groupid = NewType('Groupid', int)
 
 
-@dataclass
-class BossStatus:
-    cycle: int
-    num: int
-    health: int
-    challenger: QQid
-    info: str
-
-    def __str__(self):
-        summary = (
-            '现在{}周目，{}号boss\n'
-            '生命值{:,}'
-        ).format(self.cycle, self.num, self.health)
-        # if self.challenger:
-        #     summary += '\n' + '{}正在挑战boss'.format(self.challenger)
-        if self.info:
-            summary = self.info + '\n' + summary
-        return summary
-
 
 @dataclass
 class BossChallenge:
@@ -33,7 +14,7 @@ class BossChallenge:
     time: Pcr_time
     cycle: int
     num: int
-    health_ramain: int
+    health_remain: int
     damage: int
     is_continue: bool
     team: Optional[List[int]]

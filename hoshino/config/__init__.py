@@ -1,23 +1,16 @@
-from nonebot.default_config import *
 import importlib
+import os
 from hoshino import log
+from nonebot.default_config import *
 from .__bot__ import *
-
-# import configs
-from . import deepchat
-from . import groupmaster
-from . import hourcall
-from . import mikan
-from . import priconne
-from . import twitter
-from . import mantra
 
 # check correctness
 RES_DIR = os.path.expanduser(RES_DIR)
 assert RES_PROTOCOL in ('http', 'file', 'base64')
+assert len(SUPERUSERS) >= 1
 
 # load module configs
-logger = log.new_logger('config')
+logger = log.new_logger('config', DEBUG)
 for module in MODULES_ON:
     try:
         importlib.import_module('hoshino.config.' + module)

@@ -10,10 +10,10 @@ PCR会战管理命令 v2
 """
 
 import os
+import asyncio
 from datetime import datetime, timedelta
 from typing import List
 from matplotlib import pyplot as plt
-
 try:
     import ujson as json
 except:
@@ -46,31 +46,29 @@ ERROR_MEMBER_NOTFOUND = f'未找到成员：请使用【{USAGE_ADD_MEMBER}】加
 ERROR_PERMISSION_DENIED = '权限不足：需*群管理*以上权限'
 
 
-def _check_clan(bm: BattleMaster):
+def _check_clan(bm:BattleMaster):
     clan = bm.get_clan(1)
     if not clan:
         raise NotFoundError(ERROR_CLAN_NOTFOUND)
     return clan
 
-
-def _check_member(bm: BattleMaster, uid: int, alt: int, tip=None):
-    mem = bm.get_member(uid, alt) or bm.get_member(uid, 0)  # 兼容cmdv1
+def _check_member(bm:BattleMaster, uid:int, alt:int, tip=None):
+    mem = bm.get_member(uid, alt) or bm.get_member(uid, 0) # 兼容cmdv1
     if not mem:
         raise NotFoundError(tip or ERROR_MEMBER_NOTFOUND)
     return mem
 
-
-def _check_admin(ctx: Context_T, tip: str = ''):
+def _check_admin(ctx:Context_T, tip:str=''):
     if not priv.check_priv(ctx, priv.ADMIN):
         raise PermissionDeniedError(ERROR_PERMISSION_DENIED + tip)
 
 
 @cb_cmd('建会', ArgParser(usage=USAGE_ADD_CLAN, arg_dict={
-    'N': ArgHolder(tip='公会名'),
-    'S': ArgHolder(tip='服务器地区', type=server_code)}))
-async def add_clan(bot: NoneBot, ctx: Context_T, args: ParseResult):
+        'N': ArgHolder(tip='公会名'),
+        'S': ArgHolder(tip='服务器地区', type=server_code)}))
+async def add_clan(bot:NoneBot, ctx:Context_T, args:ParseResult):
     _check_admin(ctx)
-    bm = BattleMaster(ctx.get['group_id'])
+    bm = BattleMaster(ctx['group_id'])
     if bm.has_clan(1):
         bm.mod_clan(1, args.N, args.S)
         await bot.send(ctx, f'公会信息已修改！\n{args.N} {server_name(args.S)}', at_sender=True)
@@ -80,8 +78,8 @@ async def add_clan(bot: NoneBot, ctx: Context_T, args: ParseResult):
 
 
 @cb_cmd('查看公会', ArgParser('!查看公会'))
-async def list_clan(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def list_clan(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     clans = bm.list_clan()
     if len(clans):
         clans = map(lambda x: f"{x['cid']}会：{x['name']} {server_name(x['server'])}", clans)
@@ -92,24 +90,24 @@ async def list_clan(bot: NoneBot, ctx: Context_T, args: ParseResult):
 
 
 @cb_cmd('入会', ArgParser(usage=USAGE_ADD_MEMBER, arg_dict={
-    '': ArgHolder(tip='昵称', default=''),
-    '@': ArgHolder(tip='qq号', type=int, default=0)}))
-async def add_member(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+        '': ArgHolder(tip='昵称', default=''),
+        '@': ArgHolder(tip='qq号', type=int, default=0)}))
+async def add_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
     uid = args['@'] or args.at or ctx['user_id']
     name = args['']
     if uid != ctx['user_id']:
         _check_admin(ctx, '才能添加其他人')
-        try:  # 尝试获取群员信息，用以检查该成员是否在群中
+        try:    # 尝试获取群员信息，用以检查该成员是否在群中
             await bot.get_group_member_info(self_id=ctx['self_id'], group_id=bm.group, user_id=uid)
         except:
             raise NotFoundError(f'Error: 无法获取群员信息，请检查{uid}是否属于本群')
     if not name:
         m = await bot.get_group_member_info(self_id=ctx['self_id'], group_id=bm.group, user_id=uid)
-        name = m['card'] or m['nickname'] or str(m['user_id'])
+        name = util.filt_message(m['card']) or util.filt_message(m['nickname']) or str(m['user_id'])
 
-    mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0)  # 兼容cmdv1
+    mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0)     # 兼容cmdv1
     if mem:
         bm.mod_member(uid, mem['alt'], name, 1)
         await bot.send(ctx, f'成员{ms.at(uid)}昵称已修改为{name}')
@@ -119,23 +117,23 @@ async def add_member(bot: NoneBot, ctx: Context_T, args: ParseResult):
 
 
 @cb_cmd(('查看成员', '成员查看', '查询成员', '成员查询'), ArgParser(USAGE_LIST_MEMBER))
-async def list_member(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def list_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
     mems = bm.list_member(1)
     if l := len(mems):
         # 数字太多会被腾讯ban
         mems = map(lambda x: '{uid: <11,d} | {name}'.format_map(x), mems)
-        msg = [f"\n{clan['name']}   {l}/30 人\n____ QQ ____ | 昵称", *mems]
+        msg = [ f"\n{clan['name']}   {l}/30 人\n____ QQ ____ | 昵称", *mems]
         await bot.send(ctx, '\n'.join(msg), at_sender=True)
     else:
         raise NotFoundError(ERROR_ZERO_MEMBER)
 
 
 @cb_cmd('退会', ArgParser(usage='!退会 (@qq)', arg_dict={
-    '@': ArgHolder(tip='qq号', type=int, default=0)}))
-async def del_member(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+        '@': ArgHolder(tip='qq号', type=int, default=0)}))
+async def del_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     uid = args['@'] or args.at or ctx['user_id']
     mem = _check_member(bm, uid, bm.group, '公会内无此成员')
     if uid != ctx['user_id']:
@@ -145,8 +143,8 @@ async def del_member(bot: NoneBot, ctx: Context_T, args: ParseResult):
 
 
 @cb_cmd('清空成员', ArgParser('!清空成员'))
-async def clear_member(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def clear_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
     _check_admin(ctx)
     msg = f"{clan['name']}已清空！" if bm.clear_member(1) else f"{clan['name']}已无成员"
@@ -154,8 +152,8 @@ async def clear_member(bot: NoneBot, ctx: Context_T, args: ParseResult):
 
 
 @cb_cmd('一键入会', ArgParser('!一键入会'))
-async def batch_add_member(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def batch_add_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
     _check_admin(ctx)
     try:
@@ -182,12 +180,12 @@ def _gen_progress_text(clan_name, round_, boss, hp, max_hp, score_rate):
     return f"{clan_name} 当前进度：\n{round_}周目 {BattleMaster.int2kanji(boss)}王    SCORE x{score_rate:.1f}\nHP={hp:,d}/{max_hp:,d}"
 
 
-async def process_challenge(bot: NoneBot, ctx: Context_T, ch: ParseResult):
+async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
     """
     处理一条报刀 需要保证challenge['flag']的正确性
     """
 
-    bm = BattleMaster(ctx.get['group_id'])
+    bm = BattleMaster(ctx['group_id'])
     now = datetime.now() - timedelta(days=ch.get('dayoffset', 0))
     clan = _check_clan(bm)
     mem = _check_member(bm, ch.uid, ch.alt)
@@ -199,7 +197,7 @@ async def process_challenge(bot: NoneBot, ctx: Context_T, ch: ParseResult):
     flag = ch.flag
 
     if (ch.flag == BattleMaster.LAST) and (ch.round or ch.boss) and (not damage):
-        raise NotFoundError('补报尾刀请给出伤害值')  # 补报尾刀必须给出伤害值
+        raise NotFoundError('补报尾刀请给出伤害值')     # 补报尾刀必须给出伤害值
 
     msg = ['']
 
@@ -211,7 +209,7 @@ async def process_challenge(bot: NoneBot, ctx: Context_T, ch: ParseResult):
 
     if round_ != cur_round or boss != cur_boss:
         msg.append('⚠️上报与当前进度不一致')
-    else:  # 伤害校对
+    else:   # 伤害校对
         eps = 30000
         if damage > cur_hp + eps:
             damage = cur_hp
@@ -250,13 +248,13 @@ async def process_challenge(bot: NoneBot, ctx: Context_T, ch: ParseResult):
     'R': ArgHolder(tip='周目数', type=round_code, default=0),
     'B': ArgHolder(tip='Boss编号', type=boss_code, default=0),
     'D': ArgHolder(tip='日期差', type=int, default=0)}))
-async def add_challenge(bot: NoneBot, ctx: Context_T, args: ParseResult):
+async def add_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
     challenge = ParseResult({
         'round': args.R,
         'boss': args.B,
         'damage': args.get(''),
         'uid': args['@'] or args.at or ctx['user_id'],
-        'alt': ctx.get['group_id'],
+        'alt': ctx['group_id'],
         'flag': BattleMaster.NORM,
         'dayoffset': args.get('D', 0)
     })
@@ -268,13 +266,13 @@ async def add_challenge(bot: NoneBot, ctx: Context_T, args: ParseResult):
     '@': ArgHolder(tip='qq号', type=int, default=0),
     'R': ArgHolder(tip='周目数', type=round_code, default=0),
     'B': ArgHolder(tip='Boss编号', type=boss_code, default=0)}))
-async def add_challenge_last(bot: NoneBot, ctx: Context_T, args: ParseResult):
+async def add_challenge_last(bot:NoneBot, ctx:Context_T, args:ParseResult):
     challenge = ParseResult({
         'round': args.R,
         'boss': args.B,
         'damage': args.get(''),
         'uid': args['@'] or args.at or ctx['user_id'],
-        'alt': ctx.get['group_id'],
+        'alt': ctx['group_id'],
         'flag': BattleMaster.LAST
     })
     await process_challenge(bot, ctx, challenge)
@@ -285,13 +283,13 @@ async def add_challenge_last(bot: NoneBot, ctx: Context_T, args: ParseResult):
     '@': ArgHolder(tip='qq号', type=int, default=0),
     'R': ArgHolder(tip='周目数', type=round_code, default=0),
     'B': ArgHolder(tip='Boss编号', type=boss_code, default=0)}))
-async def add_challenge_ext(bot: NoneBot, ctx: Context_T, args: ParseResult):
+async def add_challenge_ext(bot:NoneBot, ctx:Context_T, args:ParseResult):
     challenge = ParseResult({
         'round': args.R,
         'boss': args.B,
         'damage': args.get(''),
         'uid': args['@'] or args.at or ctx['user_id'],
-        'alt': ctx.get['group_id'],
+        'alt': ctx['group_id'],
         'flag': BattleMaster.EXT
     })
     await process_challenge(bot, ctx, challenge)
@@ -301,13 +299,13 @@ async def add_challenge_ext(bot: NoneBot, ctx: Context_T, args: ParseResult):
     '@': ArgHolder(tip='qq号', type=int, default=0),
     'R': ArgHolder(tip='周目数', type=round_code, default=0),
     'B': ArgHolder(tip='Boss编号', type=boss_code, default=0)}))
-async def add_challenge_timeout(bot: NoneBot, ctx: Context_T, args: ParseResult):
+async def add_challenge_timeout(bot:NoneBot, ctx:Context_T, args:ParseResult):
     challenge = ParseResult({
         'round': args.R,
         'boss': args.B,
         'damage': 0,
         'uid': args['@'] or args.at or ctx['user_id'],
-        'alt': ctx.get['group_id'],
+        'alt': ctx['group_id'],
         'flag': BattleMaster.TIMEOUT
     })
     await process_challenge(bot, ctx, challenge)
@@ -315,8 +313,8 @@ async def add_challenge_timeout(bot: NoneBot, ctx: Context_T, args: ParseResult)
 
 @cb_cmd('删刀', ArgParser(usage='!删刀 E记录编号', arg_dict={
     'E': ArgHolder(tip='记录编号', type=int)}))
-async def del_challenge(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def del_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     now = datetime.now()
     clan = _check_clan(bm)
     ch = bm.get_challenge(args.E, 1, now)
@@ -333,10 +331,9 @@ SUBSCRIBE_PATH = os.path.expanduser('~/.hoshino/clanbattle_sub/')
 SUBSCRIBE_MAX = [99, 6, 6, 6, 6, 6]
 os.makedirs(SUBSCRIBE_PATH, exist_ok=True)
 
-
 class SubscribeData:
 
-    def __init__(self, data: dict):
+    def __init__(self, data:dict):
         for i in '12345':
             data.setdefault(i, [])
             data.setdefault('m' + i, [])
@@ -348,53 +345,53 @@ class SubscribeData:
         if 'max' not in data or len(data['max']) != 6:
             data['max'] = [99, 6, 6, 6, 6, 6]
         self._data = data
-
+        
     @staticmethod
     def default():
         return SubscribeData({
-            '1': [], '2': [], '3': [], '4': [], '5': [],
-            'm1': [], 'm2': [], 'm3': [], 'm4': [], 'm5': [],
-            'tree': [], 'lock': [],
+            '1':[], '2':[], '3':[], '4':[], '5':[],
+            'm1':[], 'm2':[], 'm3':[], 'm4':[], 'm5':[],
+            'tree':[], 'lock':[],
             'max': [99, 6, 6, 6, 6, 6]
         })
-
-    def get_sub_list(self, boss: int):
+    
+    def get_sub_list(self, boss:int):
         return self._data[str(boss)]
-
-    def get_memo_list(self, boss: int):
+        
+    def get_memo_list(self, boss:int):
         return self._data[f'm{boss}']
-
+    
     def get_tree_list(self):
         return self._data['tree']
 
-    def get_sub_limit(self, boss: int):
+    def get_sub_limit(self, boss:int):
         return self._data['max'][boss]
 
-    def set_sub_limit(self, boss: int, limit: int):
+    def set_sub_limit(self, boss:int, limit:int):
         self._data['max'][boss] = limit
 
-    def add_sub(self, boss: int, uid: int, memo: str):
+    def add_sub(self, boss:int, uid:int, memo:str):
         self._data[str(boss)].append(uid)
         self._data[f'm{boss}'].append(memo)
 
-    def remove_sub(self, boss: int, uid: int):
+    def remove_sub(self, boss:int, uid:int):
         s = self._data[str(boss)]
         m = self._data[f'm{boss}']
         i = s.index(uid)
         s.pop(i)
         m.pop(i)
 
-    def add_tree(self, uid: int):
+    def add_tree(self, uid:int):
         self._data['tree'].append(uid)
-
+        
     def clear_tree(self):
         self._data['tree'].clear()
-
+        
     def get_lock_info(self):
         return self._data['lock']
-
-    def set_lock(self, uid: int, ts):
-        self._data['lock'] = [(uid, ts)]
+    
+    def set_lock(self, uid:int, ts):
+        self._data['lock'] = [ (uid, ts) ]
 
     def clear_lock(self):
         self._data['lock'].clear()
@@ -413,12 +410,12 @@ def _load_sub(gid) -> SubscribeData:
         return SubscribeData.default()
 
 
-def _save_sub(sub: SubscribeData, gid):
+def _save_sub(sub:SubscribeData, gid):
     filename = os.path.join(SUBSCRIBE_PATH, f"{gid}.json")
     sub.dump(filename)
 
 
-def _gen_namelist_text(bm: BattleMaster, uidlist: List[int], memolist: List[str] = None, do_at=False):
+def _gen_namelist_text(bm:BattleMaster, uidlist:List[int], memolist:List[str]=None, do_at=False):
     if do_at:
         mems = map(lambda x: str(ms.at(x)), uidlist)
     else:
@@ -434,12 +431,11 @@ def _gen_namelist_text(bm: BattleMaster, uidlist: List[int], memolist: List[str]
 
 SUBSCRIBE_TIP = ''
 
-
 @cb_cmd('预约', ArgParser(usage='!预约 <Boss号> M留言', arg_dict={
     '': ArgHolder(tip='Boss编号', type=boss_code),
     'M': ArgHolder(tip='留言', default='')}))
-async def subscribe(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     uid = ctx['user_id']
     _check_clan(bm)
     _check_member(bm, uid, bm.group)
@@ -467,28 +463,28 @@ async def subscribe(bot: NoneBot, ctx: Context_T, args: ParseResult):
 
 @cb_cmd(('取消预约', '预约取消'), ArgParser(usage='!取消预约 <Boss号>', arg_dict={
     '': ArgHolder(tip='Boss编号', type=boss_code)}))
-async def unsubscribe(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def unsubscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     uid = ctx['user_id']
     _check_clan(bm)
     _check_member(bm, uid, bm.group)
     sub = _load_sub(bm.group)
     boss = args['']
-    boss_name = bm.int2kanji(boss)
+    boss_name = bm.int2kanji(boss)    
     slist = sub.get_sub_list(boss)
     mlist = sub.get_memo_list(boss)
-    limit = sub.get_sub_limit(boss)
+    limit = sub.get_sub_limit(boss)    
     if uid not in slist:
         raise NotFoundError(f'您没有预约{boss_name}王')
     sub.remove_sub(boss, uid)
     _save_sub(sub, bm.group)
-    msg = [f'\n已为您取消预约{boss_name}王！']
-    msg.append(f'=== 当前队列 {len(slist)}/{limit} ===')
+    msg = [ f'\n已为您取消预约{boss_name}王！' ]
+    msg.append(f'=== 当前队列 {len(slist)}/{limit} ===')    
     msg.extend(_gen_namelist_text(bm, slist, mlist))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
-async def auto_unsubscribe(bot: NoneBot, ctx: Context_T, gid, uid, boss):
+async def auto_unsubscribe(bot:NoneBot, ctx:Context_T, gid, uid, boss):
     sub = _load_sub(gid)
     slist = sub.get_sub_list(boss)
     if uid not in slist:
@@ -498,8 +494,8 @@ async def auto_unsubscribe(bot: NoneBot, ctx: Context_T, gid, uid, boss):
     await bot.send(ctx, f'已为{ms.at(uid)}自动取消{BattleMaster.int2kanji(boss)}王的订阅')
 
 
-async def call_subscribe(bot: NoneBot, ctx: Context_T, round_: int, boss: int):
-    bm = BattleMaster(ctx.get['group_id'])
+async def call_subscribe(bot:NoneBot, ctx:Context_T, round_:int, boss:int):
+    bm = BattleMaster(ctx['group_id'])
     msg = []
     sub = _load_sub(bm.group)
     slist = sub.get_sub_list(boss)
@@ -516,14 +512,14 @@ async def call_subscribe(bot: NoneBot, ctx: Context_T, round_: int, boss: int):
         sub.clear_tree()
         _save_sub(sub, bm.group)
     if msg:
-        await bot.send(ctx, '\n'.join(msg), at_sender=False)  # do not at the sender
+        await bot.send(ctx, '\n'.join(msg), at_sender=False)    # do not at the sender
 
 
 @cb_cmd(('查询预约', '预约查询', '查看预约', '预约查看'), ArgParser('!查询预约'))
-async def list_subscribe(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def list_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
-    msg = [f"\n{clan['name']}当前预约情况："]
+    msg = [ f"\n{clan['name']}当前预约情况：" ]
     sub = _load_sub(bm.group)
     for boss in range(1, 6):
         slist = sub.get_sub_list(boss)
@@ -536,8 +532,8 @@ async def list_subscribe(bot: NoneBot, ctx: Context_T, args: ParseResult):
 
 @cb_cmd(('清空预约', '预约清空', '清理预约', '预约清理'), ArgParser('!清空预约', arg_dict={
     '': ArgHolder(tip='Boss编号', type=boss_code)}))
-async def clear_subscribe(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def clear_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
     _check_admin(ctx, '才能清理预约队列')
     sub = _load_sub(bm.group)
@@ -553,26 +549,26 @@ async def clear_subscribe(bot: NoneBot, ctx: Context_T, args: ParseResult):
         raise NotFoundError(f"无人预约{bm.int2kanji(boss)}王")
 
 
-@cb_cmd(('预约上限',), ArgParser(usage='!预约上限 B<Boss号> <上限值>', arg_dict={
+@cb_cmd(('预约上限', ), ArgParser(usage='!预约上限 B<Boss号> <上限值>', arg_dict={
     'B': ArgHolder(tip='Boss编号', type=boss_code),
     '': ArgHolder(tip='上限值', type=int)
 }))
-async def set_subscribe_limit(bot: NoneBot, ctx, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def set_subscribe_limit(bot:NoneBot, ctx, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
     _check_admin(ctx, '才能设置预约上限')
     limit = args['']
     if not (0 < limit <= 30):
         raise ClanBattleError('预约上限只能为1~30内的整数')
     sub = _load_sub(bm.group)
-    sub.set_sub_limit(args.B, limit)
+    sub.set_sub_limit(args.B, limit)    
     _save_sub(sub, bm.group)
     await bot.send(ctx, f'{bm.int2kanji(args.B)}王预约上限已设置为：{limit}')
 
 
 @cb_cmd(('挂树', '上树'), ArgParser('!挂树'))
-async def add_sos(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def add_sos(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     uid = ctx['user_id']
     clan = _check_clan(bm)
     _check_member(bm, uid, bm.group)
@@ -582,26 +578,26 @@ async def add_sos(bot: NoneBot, ctx: Context_T, args: ParseResult):
         raise AlreadyExistError("您已在树上")
     sub.add_tree(uid)
     _save_sub(sub, bm.group)
-    msg = ["\n您已上树，本Boss被击败时将会通知您",
-           f"目前{clan['name']}挂树人数为{len(tree)}人："]
+    msg = [ "\n您已上树，本Boss被击败时将会通知您",
+           f"目前{clan['name']}挂树人数为{len(tree)}人：" ]
     msg.extend(_gen_namelist_text(bm, tree))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
-@cb_cmd(('查树',), ArgParser('!查树'))
-async def list_sos(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+@cb_cmd(('查树', ), ArgParser('!查树'))
+async def list_sos(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
     sub = _load_sub(bm.group)
     tree = sub.get_tree_list()
-    msg = [f"\n目前{clan['name']}挂树人数为{len(tree)}人："]
+    msg = [ f"\n目前{clan['name']}挂树人数为{len(tree)}人：" ]
     msg.extend(_gen_namelist_text(bm, tree))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
 @cb_cmd(('锁定', '申请出刀'), ArgParser('!锁定'))
-async def lock_boss(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def lock_boss(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     _check_clan(bm)
     _check_member(bm, ctx['user_id'], bm.group)
     sub = _load_sub(bm.group)
@@ -611,7 +607,7 @@ async def lock_boss(bot: NoneBot, ctx: Context_T, args: ParseResult):
         time = datetime.fromtimestamp(ts)
         mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0) or {'name': str(uid)}
         delta = datetime.now() - time
-        delta = timedelta(seconds=round(delta.total_seconds()))  # ignore miliseconds
+        delta = timedelta(seconds=round(delta.total_seconds()))     # ignore miliseconds
         msg = f"\n锁定失败：{mem['name']}已于{delta}前锁定了Boss"
         await bot.send(ctx, msg, at_sender=True)
     else:
@@ -623,9 +619,9 @@ async def lock_boss(bot: NoneBot, ctx: Context_T, args: ParseResult):
         await bot.send(ctx, msg, at_sender=True)
 
 
-@cb_cmd(('解锁',), ArgParser('!解锁'))
-async def unlock_boss(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+@cb_cmd(('解锁', ), ArgParser('!解锁'))
+async def unlock_boss(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     _check_clan(bm)
     sub = _load_sub(bm.group)
     lock = sub.get_lock_info()
@@ -635,7 +631,7 @@ async def unlock_boss(bot: NoneBot, ctx: Context_T, args: ParseResult):
         if uid != ctx['user_id']:
             mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0) or {'name': str(uid)}
             delta = datetime.now() - time
-            delta = timedelta(seconds=round(delta.total_seconds()))  # ignore miliseconds
+            delta = timedelta(seconds=round(delta.total_seconds()))     # ignore miliseconds
             _check_admin(ctx, f"才能解锁其他人\n解锁失败：{mem['name']}于{delta}前锁定了Boss")
         sub.clear_lock()
         _save_sub(sub, bm.group)
@@ -646,7 +642,7 @@ async def unlock_boss(bot: NoneBot, ctx: Context_T, args: ParseResult):
         await bot.send(ctx, msg, at_sender=True)
 
 
-async def auto_unlock_boss(bot: NoneBot, ctx: Context_T, bm: BattleMaster):
+async def auto_unlock_boss(bot:NoneBot, ctx:Context_T, bm:BattleMaster):
     sub = _load_sub(bm.group)
     lock = sub.get_lock_info()
     if lock:
@@ -655,7 +651,7 @@ async def auto_unlock_boss(bot: NoneBot, ctx: Context_T, bm: BattleMaster):
         if uid != ctx['user_id']:
             mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0) or {'name': str(uid)}
             delta = datetime.now() - time
-            delta = timedelta(seconds=round(delta.total_seconds()))  # ignore miliseconds
+            delta = timedelta(seconds=round(delta.total_seconds()))     # ignore miliseconds
             msg = f"⚠️{mem['name']}于{delta}前锁定了Boss，您出刀前未申请锁定！"
             await bot.send(ctx, msg, at_sender=True)
         else:
@@ -666,8 +662,8 @@ async def auto_unlock_boss(bot: NoneBot, ctx: Context_T, bm: BattleMaster):
 
 
 @cb_cmd(('进度', '进度查询', '查询进度', '进度查看', '查看进度', '状态'), ArgParser(usage='!进度'))
-async def show_progress(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def show_progress(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
     r, b, hp = bm.get_challenge_progress(1, datetime.now())
     max_hp, score_rate = bm.get_boss_info(r, b, clan['server'])
@@ -676,8 +672,8 @@ async def show_progress(bot: NoneBot, ctx: Context_T, args: ParseResult):
 
 
 @cb_cmd(('统计', '伤害统计'), ArgParser(usage='!伤害统计'))
-async def stat_damage(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def stat_damage(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     now = datetime.now()
     clan = _check_clan(bm)
     yyyy, mm, _ = bm.get_yyyymmdd(now)
@@ -689,7 +685,7 @@ async def stat_damage(bot: NoneBot, ctx: Context_T, args: ParseResult):
         return
 
     stat.sort(key=lambda x: x[3][0], reverse=True)
-    name = [s[2] for s in stat]
+    name = [ s[2] for s in stat ]
     y_pos = list(range(yn))
     y_size = 0.3 * yn + 1.0
     unit = 1e4
@@ -702,7 +698,7 @@ async def stat_damage(bot: NoneBot, ctx: Context_T, args: ParseResult):
         for i in range(2, 6):
             d[i] += d[i - 1]
     pre_sum_dmg = [
-        [s[3][b] for s in stat] for b in range(6)
+        [ s[3][b] for s in stat ] for b in range(6)
     ]
 
     # generate statistic figure
@@ -715,7 +711,7 @@ async def stat_damage(bot: NoneBot, ctx: Context_T, args: ParseResult):
     ax.invert_yaxis()
     ax.set_xlabel('伤害')
     colors = ['#00a2e8', '#22b14c', '#b5e61d', '#fff200', '#ff7f27', '#ed1c24']
-    bars = [ax.barh(y_pos, pre_sum_dmg[b], align='center', color=colors[b]) for b in range(5, -1, -1)]
+    bars = [ ax.barh(y_pos, pre_sum_dmg[b], align='center', color=colors[b]) for b in range(5, -1, -1) ]
     bars.reverse()
     ax.ticklabel_format(axis='x', style='plain')
     for b in range(1, 6):
@@ -724,24 +720,24 @@ async def stat_damage(bot: NoneBot, ctx: Context_T, args: ParseResult):
             y = rect.get_y() + rect.get_height() / 2
             d = pre_sum_dmg[b][i] - pre_sum_dmg[b - 1][i]
             if d > unit:
-                ax.text(x, y, f'{d / unit:.0f}{unit_str}', ha='center', va='center')
+                ax.text(x, y, f'{d/unit:.0f}{unit_str}', ha='center', va='center')
     plt.subplots_adjust(left=0.12, right=0.96, top=1 - 0.35 / y_size, bottom=0.55 / y_size)
     pic = util.fig2b64(plt)
     plt.close()
-
+    
     msg = f"{ms.image(pic)}\n※分数统计请发送“!分数统计”"
     await bot.send(ctx, msg, at_sender=True)
 
 
 @cb_cmd('分数统计', ArgParser(usage='!分数统计'))
-async def stat_score(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+async def stat_score(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     now = datetime.now()
     clan = _check_clan(bm)
     yyyy, mm, _ = bm.get_yyyymmdd(now)
     stat = bm.stat_score(1, now)
     stat.sort(key=lambda x: x[3], reverse=True)
-
+    
     if not len(stat):
         await bot.send(ctx, f"{clan['name']}{yyyy}年{mm}月会战统计数据为空", at_sender=True)
         return
@@ -778,7 +774,7 @@ async def stat_score(bot: NoneBot, ctx: Context_T, args: ParseResult):
     ax.ticklabel_format(axis='x', style='plain')
     for rect in bars:
         w = rect.get_width()
-        ax.text(w, rect.get_y() + rect.get_height() / 2, f'{w / unit:.2f}{unit_str}', ha='left', va='center')
+        ax.text(w, rect.get_y() + rect.get_height() / 2, f'{w/unit:.2f}{unit_str}', ha='left', va='center')
     plt.subplots_adjust(left=0.12, right=0.96, top=1 - 0.35 / y_size, bottom=0.55 / y_size)
     pic = util.fig2b64(plt)
     plt.close()
@@ -787,18 +783,22 @@ async def stat_score(bot: NoneBot, ctx: Context_T, args: ParseResult):
     await bot.send(ctx, msg, at_sender=True)
 
 
-async def _do_show_remain(bot: NoneBot, ctx: Context_T, args: ParseResult, at_user: bool):
-    bm = BattleMaster(ctx.get['group_id'])
+async def _do_show_remain(bot:NoneBot, ctx:Context_T, args:ParseResult, at_user:bool):
+    bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
     if at_user:
         _check_admin(ctx, '才能催刀。您可以用【!查刀】查询余刀')
     rlist = bm.list_challenge_remain(1, datetime.now() - timedelta(days=args.get('D', 0)))
     rlist.sort(key=lambda x: x[3] + x[4], reverse=True)
-    msg = [f"\n{clan['name']}今日余刀："]
+    msg = [ f"\n{clan['name']}今日余刀：" ]
+    n = len(rlist)
+    # for i in range(0, n, 10):
     for uid, _, name, r_n, r_e in rlist:
         if r_n or r_e:
             msg.append(f"剩{r_n}刀 补时{r_e}刀 | {ms.at(uid) if at_user else name}")
-    if len(msg) == 1:
+        # await bot.send(ctx, '\n'.join(msg))
+        # msg.clear()
+    if not n:
         await bot.send(ctx, f"今日{clan['name']}所有成员均已下班！各位辛苦了！", at_sender=True)
     else:
         msg.append('若有负数说明报刀有误 请注意核对\n使用“!出刀记录 @qq”可查看详细记录')
@@ -808,21 +808,19 @@ async def _do_show_remain(bot: NoneBot, ctx: Context_T, args: ParseResult, at_us
 
 
 @cb_cmd('查刀', ArgParser(usage='!查刀', arg_dict={
-    'D': ArgHolder(tip='日期差', type=int, default=0)}))
-async def list_remain(bot: NoneBot, ctx: Context_T, args: ParseResult):
+        'D': ArgHolder(tip='日期差', type=int, default=0)}))
+async def list_remain(bot:NoneBot, ctx:Context_T, args:ParseResult):
     await _do_show_remain(bot, ctx, args, at_user=False)
-
-
 @cb_cmd('催刀', ArgParser(usage='!催刀'))
-async def urge_remain(bot: NoneBot, ctx: Context_T, args: ParseResult):
+async def urge_remain(bot:NoneBot, ctx:Context_T, args:ParseResult):
     await _do_show_remain(bot, ctx, args, at_user=True)
 
 
 @cb_cmd('出刀记录', ArgParser(usage='!出刀记录 (@qq)', arg_dict={
-    '@': ArgHolder(tip='qq号', type=int, default=0),
-    'D': ArgHolder(tip='日期差', type=int, default=0)}))
-async def list_challenge(bot: NoneBot, ctx: Context_T, args: ParseResult):
-    bm = BattleMaster(ctx.get['group_id'])
+        '@': ArgHolder(tip='qq号', type=int, default=0),
+        'D': ArgHolder(tip='日期差', type=int, default=0)}))
+async def list_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
     now = datetime.now() - timedelta(days=args.D)
     zone = bm.get_timezone_num(clan['server'])
@@ -833,12 +831,19 @@ async def list_challenge(bot: NoneBot, ctx: Context_T, args: ParseResult):
     else:
         challen = bm.list_challenge_of_day(clan['cid'], now, zone)
 
-    msg = [f'{clan["name"]}出刀记录：\n编号|出刀者|周目|Boss|伤害|标记']
-    challenstr = 'E{eid:0>3d}|{name}|r{round}|b{boss}|{dmg: >7,d}{flag_str}'
-    for c in challen:
-        mem = bm.get_member(c['uid'], c['alt'])
-        c['name'] = mem['name'] if mem else c['uid']
-        flag = c['flag']
-        c['flag_str'] = '|补时' if flag & bm.EXT else '|尾刀' if flag & bm.LAST else '|掉线' if flag & bm.TIMEOUT else '|通常'
-        msg.append(challenstr.format_map(c))
-    await bot.send(ctx, '\n'.join(msg))
+    n = len(challen)
+    if not n:
+        await bot.send(ctx, "未检索到出刀记录")
+        return
+    msg = [ f'{clan["name"]}出刀记录：\n编号|出刀者|周目|Boss|伤害|标记' ]
+    for i in range(0, n, 8):
+        challenstr = 'E{eid:0>3d}|{name}|r{round}|b{boss}|{dmg: >7,d}{flag_str}'
+        for c in challen[i:min(n, i+8)]:
+            mem = bm.get_member(c['uid'], c['alt'])
+            c['name'] = mem['name'] if mem else c['uid']
+            flag = c['flag']
+            c['flag_str'] = '|补时' if flag & bm.EXT else '|尾刀' if flag & bm.LAST else '|掉线' if flag & bm.TIMEOUT else '|通常'
+            msg.append(challenstr.format_map(c))
+        await bot.send(ctx, '\n'.join(msg))
+        msg.clear()
+        await asyncio.sleep(0.5)

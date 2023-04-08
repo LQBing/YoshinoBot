@@ -1,9 +1,9 @@
 var vm = new Vue({
     el: '#app',
     data: {
-        bosstag: ['挂树', '预约1', '预约2', '预约3', '预约4', '预约5'],
+        bosstag: ['预约1', '预约2', '预约3', '预约4', '预约5'],
         subscribers: [
-            [], [], [], [], [], [],
+            [], [], [], [], [],
         ],
         members: [],
         group_name: null,
@@ -17,7 +17,7 @@ var vm = new Vue({
         }).then(function (res) {
             if (res.data.code == 0) {
                 for (sub of res.data.subscribers) {
-                    thisvue.subscribers[sub.boss].push(sub);
+                    thisvue.subscribers[sub.boss-1].push(sub);
                 }
                 thisvue.group_name = res.data.group_name;
                 document.title = res.data.group_name + ' - 公会战设置';
@@ -65,6 +65,9 @@ var vm = new Vue({
                     break;
                 case '5':
                     window.location = `../my/`;
+                    break;
+                case '6':
+                    window.location = `../clan-rank/`;
                     break;
             }
         },

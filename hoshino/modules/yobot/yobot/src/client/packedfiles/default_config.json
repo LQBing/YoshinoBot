@@ -4,33 +4,15 @@
     "access_token": "",
     "client_salt": null,
     "public_address": null,
-    "public_basepath": "/yobot/",
+    "public_basepath": "/",
     "web_mode_hint": true,
     "super-admin": [],
     "black-list": [],
     "white_list_mode": false,
     "black-list-group": [],
     "white-list-group": [],
-    "setting-restrict": 2,
     "allow_bulk_private": false,
-    "auto_update": true,
-    "update-time": "random",
     "clan_battle_mode": "web",
-    "show_jjc_solution": "url",
-    "gacha_on": false,
-    "gacha_private_on": false,
-    "jjc_search": "nomae.net",
-    "jjc_auth_key": "",
-    "news_jp_official": true,
-    "news_jp_twitter": true,
-    "news_tw_official": true,
-    "news_cn_official": true,
-    "news_cn_bilibili": true,
-    "news_interval_auto": true,
-    "news_interval_minutes": 30,
-    "calender_region": "default",
-    "calender_on": true,
-    "calender_time": "08:00",
     "notify_groups": [],
     "notify_privates": [],
     "preffix_on": false,
@@ -41,6 +23,7 @@
     "show_icp": false,
     "icp_info": "",
     "gongan_info": "",
+    "web_gzip": 0,
 
     "boss":{
         "jp": [
@@ -59,5 +42,15 @@
             [6000000, 8000000, 10000000, 12000000, 15000000],
             [6000000, 8000000, 10000000, 12000000, 15000000]
         ]
+    },
+    "level_by_cycle":{
+        "cn":[[1,3],[4,10],[11,999]],
+        "jp":[[1,3],[4,10],[11,45],[46,999]],
+        "tw":[[1,3],[4,10],[11,999]]
+    },
+    "boss_id":{
+        "cn":["302100","302000","300600","300800","300100"],
+        "jp":["302100","302000","300600","300800","300100"],
+        "tw":["302100","302000","300600","300800","300100"]
     }
 }

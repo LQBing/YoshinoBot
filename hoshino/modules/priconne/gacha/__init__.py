@@ -2,7 +2,7 @@ import os
 import random
 from collections import defaultdict
 
-from hoshino import Service, priv, util, config
+from hoshino import Service, priv, util
 from hoshino.typing import *
 from hoshino.util import DailyNumberLimiter, concat_pic, pic2b64, silence
 
@@ -13,6 +13,7 @@ try:
     import ujson as json
 except:
     import json
+
 
 sv_help = '''
 [星乃来发十连] 转蛋模拟
@@ -39,37 +40,30 @@ except FileNotFoundError as e:
     sv.logger.warning('group_pool_config.json not found, will create when needed.')
 _group_pool = defaultdict(lambda: DEFAULT_POOL, _group_pool)
 
-
 def dump_pool_config():
     with open(_pool_config_file, 'w', encoding='utf8') as f:
         json.dump(_group_pool, f, ensure_ascii=False)
 
 
 gacha_10_aliases = ('抽十连', '十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '抽个十连', '抽发十连', '抽次十连', '十连扭蛋', '扭蛋十连',
-                    '10连', '10连！', '10连抽', '来个10连', '来发10连', '来次10连', '抽个10连', '抽发10连', '抽次10连', '10连扭蛋', '扭蛋10连',
-                    '十連', '十連！', '十連抽', '來個十連', '來發十連', '來次十連', '抽個十連', '抽發十連', '抽次十連', '十連轉蛋', '轉蛋十連',
-                    '10連', '10連！', '10連抽', '來個10連', '來發10連', '來次10連', '抽個10連', '抽發10連', '抽次10連', '10連轉蛋', '轉蛋10連')
-gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋',
-                   '單抽', '單抽！', '來發單抽', '來個單抽', '來次單抽', '轉蛋單抽', '單抽轉蛋')
-gacha_300_aliases = ('抽一井', '来一井', '来发井', '抽发井', '天井扭蛋', '扭蛋天井', '天井轉蛋', '轉蛋天井')
+                    '10连', '10连！', '10连抽', '来个10连', '来发10连', '来次10连', '抽个10连', '抽发10连', '抽次10连', '10连扭蛋', '扭蛋10连')
+gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋')
+gacha_tenjou_aliases = ('抽一井', '来一井', '来发井', '抽发井', '天井扭蛋', '扭蛋天井')
 
-
-@sv.on_fullmatch(('卡池资讯', '查看卡池', '看看卡池', '康康卡池', '卡池資訊', '看看up', '看看UP'))
+@sv.on_fullmatch('卡池资讯', '查看卡池', '看看卡池', '康康卡池', '看看up', '看看UP')
 async def gacha_info(bot, ev: CQEvent):
     gid = str(ev.group_id)
     gacha = Gacha(_group_pool[gid])
-    up_chara = gacha.up
-    if sv.bot.config.USE_CQPRO:
-        up_chara = map(lambda x: str(
-            chara.fromname(x, star=3).icon.cqcode) + x, up_chara)
+    up_chara = []
+    for x in gacha.up:
+        icon = await chara.fromname(x, star=3).get_icon()
+        up_chara.append(str(icon.cqcode) + x)
     up_chara = '\n'.join(up_chara)
-    await bot.send(ev, f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob / 10):.1f}% 3★出率={(gacha.s3_prob) / 10:.1f}%")
+    await bot.send(ev, f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%")
 
 
 POOL_NAME_TIP = '请选择以下卡池\n> 切换卡池jp\n> 切换卡池tw\n> 切换卡池b\n> 切换卡池mix'
-
-
-@sv.on_prefix(('切换卡池', '选择卡池', '切換卡池', '選擇卡池'))
+@sv.on_prefix('切换卡池', '选择卡池')
 async def set_pool(bot, ev: CQEvent):
     if not priv.check_priv(ev, priv.ADMIN):
         await bot.finish(ev, '只有群管理才能切换卡池', at_sender=True)
@@ -100,13 +94,14 @@ async def check_jewel_num(bot, ev: CQEvent):
         await bot.finish(ev, JEWEL_EXCEED_NOTICE, at_sender=True)
 
 
-async def check_tenjo_num(bot, ev: CQEvent):
+async def check_tenjou_num(bot, ev: CQEvent):
     if not tenjo_limit.check(ev.user_id):
         await bot.finish(ev, TENJO_EXCEED_NOTICE, at_sender=True)
 
 
 @sv.on_prefix(gacha_1_aliases, only_to_me=True)
 async def gacha_1(bot, ev: CQEvent):
+
     await check_jewel_num(bot, ev)
     jewel_limit.increase(ev.user_id, 150)
 
@@ -115,12 +110,10 @@ async def gacha_1(bot, ev: CQEvent):
     chara, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
     silence_time = hiishi * 60
 
-    res = f'{chara.name} {"★" * chara.star}'
-    if sv.bot.config.USE_CQPRO:
-        res = f'{chara.icon.cqcode} {res}'
-    if config.priconne.gacha.ENABLE_SILENCE:
-        await silence(ev, silence_time)
-        await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}', at_sender=True)
+    res = f'{await chara.get_icon_cqcode()} {chara.name} {"★"*chara.star}'
+
+    await silence(ev, silence_time)
+    await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}', at_sender=True)
 
 
 @sv.on_prefix(gacha_10_aliases, only_to_me=True)
@@ -135,32 +128,31 @@ async def gacha_10(bot, ev: CQEvent):
     result, hiishi = gacha.gacha_ten()
     silence_time = hiishi * 6 if hiishi < SUPER_LUCKY_LINE else hiishi * 60
 
-    if sv.bot.config.USE_CQPRO:
-        res1 = chara.gen_team_pic(result[:5], star_slot_verbose=False)
-        res2 = chara.gen_team_pic(result[5:], star_slot_verbose=False)
-        res = concat_pic([res1, res2])
-        res = pic2b64(res)
-        res = MessageSegment.image(res)
-        result = [f'{c.name}{"★" * c.star}' for c in result]
-        res1 = ' '.join(result[0:5])
-        res2 = ' '.join(result[5:])
-        res = f'{res}\n{res1}\n{res2}'
-    else:
-        result = [f'{c.name}{"★" * c.star}' for c in result]
-        res1 = ' '.join(result[0:5])
-        res2 = ' '.join(result[5:])
-        res = f'{res1}\n{res2}'
+    res1 = await chara.gen_team_pic(result[:5], star_slot_verbose=False)
+    res2 = await chara.gen_team_pic(result[5:], star_slot_verbose=False)
+    res = concat_pic([res1, res2])
+    res = pic2b64(res)
+    res = MessageSegment.image(res)
+    result = [f'{c.name}{"★"*c.star}' for c in result]
+    res1 = ' '.join(result[0:5])
+    res2 = ' '.join(result[5:])
+    res = f'{res}\n{res1}\n{res2}'
+    # 纯文字版
+    # result = [f'{c.name}{"★"*c.star}' for c in result]
+    # res1 = ' '.join(result[0:5])
+    # res2 = ' '.join(result[5:])
+    # res = f'{res1}\n{res2}'
 
     if hiishi >= SUPER_LUCKY_LINE:
         await bot.send(ev, '恭喜海豹！おめでとうございます！')
-    if config.priconne.gacha.ENABLE_SILENCE:
-        await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}\n', at_sender=True)
-        await silence(ev, silence_time)
+    await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}\n', at_sender=True)
+    await silence(ev, silence_time)
 
 
-@sv.on_prefix(gacha_300_aliases, only_to_me=True)
-async def gacha_300(bot, ev: CQEvent):
-    await check_tenjo_num(bot, ev)
+@sv.on_prefix(gacha_tenjou_aliases, only_to_me=True)
+async def gacha_tenjou(bot, ev: CQEvent):
+
+    await check_tenjou_num(bot, ev)
     tenjo_limit.increase(ev.user_id)
 
     gid = str(ev.group_id)
@@ -181,15 +173,15 @@ async def gacha_300(bot, ev: CQEvent):
         pics = []
         for i in range(0, lenth, step):
             j = min(lenth, i + step)
-            pics.append(chara.gen_team_pic(res[i:j], star_slot_verbose=False))
+            pics.append(await chara.gen_team_pic(res[i:j], star_slot_verbose=False))
         res = concat_pic(pics)
         res = pic2b64(res)
         res = MessageSegment.image(res)
 
     msg = [
         f"\n素敵な仲間が増えますよ！ {res}",
-        f"★★★×{up + s3} ★★×{s2} ★×{s1}",
-        f"获得记忆碎片×{100 * up}与女神秘石×{50 * (up + s3) + 10 * s2 + s1}！\n第{result['first_up_pos']}抽首次获得up角色" if up else f"获得女神秘石{50 * (up + s3) + 10 * s2 + s1}个！"
+        f"★★★×{up+s3} ★★×{s2} ★×{s1}",
+        f"获得记忆碎片×{gacha.memo_pieces*up}与女神秘石×{50*(up+s3) + 10*s2 + s1}！\n第{result['first_up_pos']}抽首次获得up角色" if up else f"获得女神秘石{50*(up+s3) + 10*s2 + s1}个！"
     ]
 
     if up == 0 and s3 == 0:
@@ -199,15 +191,15 @@ async def gacha_300(bot, ev: CQEvent):
     elif up == 0 and s3 <= 3:
         msg.append("这位酋长，梦幻包考虑一下？")
     elif up == 0:
-        msg.append("据说天井的概率只有12.16%")
+        msg.append("据说天井的概率只有" + gacha.tenjou_rate)
     elif up <= 2:
         if result['first_up_pos'] < 50:
             msg.append("你的喜悦我收到了，滚去喂鲨鱼吧！")
         elif result['first_up_pos'] < 100:
             msg.append("已经可以了，您已经很欧了")
-        elif result['first_up_pos'] > 290:
+        elif result['first_up_pos'] > gacha.tenjou_line - 10:
             msg.append("标 准 结 局")
-        elif result['first_up_pos'] > 250:
+        elif result['first_up_pos'] > gacha.tenjou_line - 50:
             msg.append("补井还是不补井，这是一个问题...")
         else:
             msg.append("期望之内，亚洲水平")
@@ -217,9 +209,8 @@ async def gacha_300(bot, ev: CQEvent):
         msg.append("记忆碎片一大堆！您是托吧？")
 
     await bot.send(ev, '\n'.join(msg), at_sender=True)
-    if config.priconne.gacha.ENABLE_SILENCE:
-        silence_time = (100 * up + 50 * (up + s3) + 10 * s2 + s1) * 1
-        await silence(ev, silence_time)
+    silence_time = (100*up + 50*(up+s3) + 10*s2 + s1) * 1
+    await silence(ev, silence_time)
 
 
 @sv.on_prefix('氪金')

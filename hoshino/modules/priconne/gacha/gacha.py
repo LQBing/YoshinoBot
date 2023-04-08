@@ -8,6 +8,18 @@ class Gacha(object):
 
     def __init__(self, pool_name: str = "MIX"):
         super().__init__()
+        self.pool_name = pool_name
+        if pool_name == 'BL':
+            self.tenjou_line = 300
+            self.tenjou_rate = '12.16%'
+        else:
+            self.tenjou_line = 200
+            self.tenjou_rate = '24.54%'
+        self.memo_pieces = 200 if (pool_name == 'JP' or pool_name == 'MIX') else 100
+        self.load_pool(pool_name)
+
+
+    def load_pool(self, pool_name: str):
         config = util.load_config(__file__)
         pool = config[pool_name]
         self.up_prob = pool["up_prob"]
@@ -18,6 +30,7 @@ class Gacha(object):
         self.star3 = pool["star3"]
         self.star2 = pool["star2"]
         self.star1 = pool["star1"]
+
 
     def gacha_one(self, up_prob: int, s3_prob: int, s2_prob: int, s1_prob: int = None):
         '''
@@ -44,6 +57,7 @@ class Gacha(object):
         else:
             return chara.fromname(random.choice(self.star1), 1), 1
 
+
     def gacha_ten(self):
         result = []
         hiishi = 0
@@ -51,28 +65,30 @@ class Gacha(object):
         s3 = self.s3_prob
         s2 = self.s2_prob
         s1 = 1000 - s3 - s2
-        for _ in range(9):  # 前9连
+        for _ in range(9):    # 前9连
             c, y = self.gacha_one(up, s3, s2, s1)
             result.append(c)
             hiishi += y
-        c, y = self.gacha_one(up, s3, s2 + s1, 0)  # 保底第10抽
+        c, y = self.gacha_one(up, s3, s2 + s1, 0)    # 保底第10抽
         result.append(c)
         hiishi += y
 
         return result, hiishi
 
+
     def gacha_tenjou(self):
-        result = {'up': [], 's3': [], 's2': [], 's1': []}
+        total_div_10 = self.tenjou_line // 10
+        result = {'up': [], 's3': [], 's2':[], 's1':[]}
         first_up_pos = 999999
         up = self.up_prob
         s3 = self.s3_prob
         s2 = self.s2_prob
         s1 = 1000 - s3 - s2
-        for i in range(9 * 30):
+        for i in range(9 * total_div_10):
             c, y = self.gacha_one(up, s3, s2, s1)
             if 100 == y:
                 result['up'].append(c)
-                first_up_pos = min(first_up_pos, 10 * ((i + 1) // 9) + ((i + 1) % 9))
+                first_up_pos = min(first_up_pos, 10 * ((i+1) // 9) + ((i+1) % 9))
             elif 50 == y:
                 result['s3'].append(c)
             elif 10 == y:
@@ -80,17 +96,17 @@ class Gacha(object):
             elif 1 == y:
                 result['s1'].append(c)
             else:
-                pass  # should never reach here
-        for i in range(30):
+                pass    # should never reach here
+        for i in range(total_div_10):
             c, y = self.gacha_one(up, s3, s2 + s1, 0)
             if 100 == y:
                 result['up'].append(c)
-                first_up_pos = min(first_up_pos, 10 * (i + 1))
+                first_up_pos = min(first_up_pos, 10 * (i+1))
             elif 50 == y:
                 result['s3'].append(c)
             elif 10 == y:
                 result['s2'].append(c)
             else:
-                pass  # should never reach here
+                pass    # should never reach here
         result['first_up_pos'] = first_up_pos
         return result

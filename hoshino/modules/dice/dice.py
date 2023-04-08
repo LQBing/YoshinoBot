@@ -3,12 +3,12 @@ import random
 
 from hoshino import Service
 from hoshino.typing import CQEvent
+from hoshino.util import filt_message
 
 sv = Service('dice', help_='''
 [.r] 掷骰子
 [.r 3d12] 掷3次12面骰子
 '''.strip())
-
 
 async def do_dice(bot, ev, num, min_, max_, opr, offset, TIP="的掷骰结果是："):
     if num == 0:
@@ -32,9 +32,7 @@ async def do_dice(bot, ev, num, min_, max_, opr, offset, TIP="的掷骰结果是
     await bot.send(ev, msg, at_sender=True)
 
 
-@sv.on_rex(
-    re.compile(r'^\.r\s*((?P<num>\d{0,2})d((?P<min>\d{1,4})~)?(?P<max>\d{0,4})((?P<opr>[+-])(?P<offset>\d{0,5}))?)?\b',
-               re.I))
+@sv.on_rex(re.compile(r'^\.r\s*((?P<num>\d{0,2})d((?P<min>\d{1,4})~)?(?P<max>\d{0,4})((?P<opr>[+-])(?P<offset>\d{0,5}))?)?\b', re.I))
 async def dice(bot, ev):
     num, min_, max_, opr, offset = 1, 1, 100, 1, 0
     match = ev['match']
@@ -53,6 +51,6 @@ async def dice(bot, ev):
 
 @sv.on_prefix('.qj')
 async def kc_marriage(bot, ev: CQEvent):
-    wife = ev.message.extract_plain_text().strip()
+    wife = filt_message(ev.message.extract_plain_text().strip())
     tip = f'与{wife}的ケッコンカッコカリ结果是：' if wife else '的ケッコンカッコカリ结果是：'
     await do_dice(bot, ev, 1, 3, 6, 1, 0, tip)

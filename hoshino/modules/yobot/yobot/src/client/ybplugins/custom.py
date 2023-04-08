@@ -21,6 +21,10 @@ from aiocqhttp.api import Api
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from quart import Quart
 
+from pathlib import Path
+import os
+import configparser
+
 
 class Custom:
     def __init__(self,
@@ -43,7 +47,7 @@ class Custom:
         # 此时没有running_loop，不要直接使用await，请使用asyncio.ensure_future并指定loop=asyncio.get_event_loop()
 
         # 如果需要启用，请注释掉下面一行
-        return
+        # return
 
         # 这是来自yobot_config.json的设置，如果需要增加设置项，请修改default_config.json文件
         self.setting = glo_setting
@@ -60,6 +64,7 @@ class Custom:
         # @app.route('/is-bot-running', methods=['GET'])
         # async def check_bot():
         #     return 'yes, bot is running'
+        self.inipath = Path(os.path.dirname(__file__)).parent / 'yobot_data' / 'groups.ini'
 
     async def execute_async(self, ctx: Dict[str, Any]) -> Union[None, bool, str]:
         '''
@@ -70,6 +75,18 @@ class Custom:
         # 注意：这是一个异步函数，禁止使用阻塞操作（比如requests）
 
         # 如果需要使用，请注释掉下面一行
+
+        # 多CQ适配：触发写入ini，群号=bot号
+        cmd = ctx['raw_message']
+        if cmd == '手动添加群记录' or cmd == '修复网页催刀':
+            # print(ctx)
+            config=configparser.RawConfigParser()
+            config.read(str(self.inipath))
+            config.set('GROUPS', str(ctx['group_id']), str(ctx['self_id']))
+            with open(str(self.inipath),'w') as f:
+                config.write(f)
+            return '群记录添加成功！'
+
         return
 
         cmd = ctx['raw_message']

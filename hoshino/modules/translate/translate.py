@@ -1,8 +1,8 @@
 from nonebot import on_command, CommandSession
 from nonebot import permission as perm
+
 from sogou_tr import sogou_tr
 from datetime import datetime, timedelta
-
 
 # sogou_tr使用帮助：
 # print(sogou_tr('hello world'))  # -> '你好世界'
@@ -23,7 +23,7 @@ async def translate(session: CommandSession):
 
 @translate.args_parser
 async def _(session: CommandSession):
-    stripped_arg = session.current_arg_text.strip()  # 删去首尾空白
+    stripped_arg = session.current_arg_text.strip() # 删去首尾空白
     if stripped_arg:
         session.state['text'] = stripped_arg
     else:
@@ -35,7 +35,7 @@ async def get_translation(text: str) -> str:
     if not hasattr(get_translation, 'cdtime'):
         get_translation.cdtime = datetime.now() - timedelta(seconds=3)
     now = datetime.now()
-    if (now < get_translation.cdtime):
+    if(now < get_translation.cdtime):
         return '翻译姬冷却中...'
     else:
         get_translation.cdtime = datetime.now() + timedelta(seconds=1)

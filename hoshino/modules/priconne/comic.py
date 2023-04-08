@@ -3,7 +3,6 @@ import re
 import random
 import asyncio
 from urllib.parse import urljoin, urlparse, parse_qs
-
 try:
     import ujson as json
 except:
@@ -18,11 +17,9 @@ sv_help = '''
 '''.strip()
 sv = Service('pcr-comic', help_=sv_help, bundle='pcr订阅')
 
-
 def load_index():
     with open(R.get('img/priconne/comic/index.json').path, encoding='utf8') as f:
         return json.load(f)
-
 
 def get_pic_name(id_):
     pre = 'episode_'

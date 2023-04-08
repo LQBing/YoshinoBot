@@ -27,8 +27,10 @@ class Setting:
     def __init__(self,
                  glo_setting,
                  bot_api,
+                 boss_id_name,
                  *args, **kwargs):
         self.setting = glo_setting
+        self.boss_id_name = boss_id_name
 
     def _get_users_json(self, req_querys: dict):
         querys = []
@@ -103,6 +105,7 @@ class Setting:
                 )
             if request.method == 'GET':
                 settings = self.setting.copy()
+                boss_id_name = self.boss_id_name.copy()
                 del settings['dirname']
                 del settings['verinfo']
                 del settings['host']
@@ -112,6 +115,7 @@ class Setting:
                     code=0,
                     message='success',
                     settings=settings,
+                    boss_id_name=boss_id_name
                 )
             elif request.method == 'PUT':
                 req = await request.get_json()
@@ -344,7 +348,7 @@ class Setting:
                 if action == 'get_data':
                     groups = []
                     for group in Clan_group.select().where(
-                            Clan_group.deleted == False,
+                        Clan_group.deleted == False,
                     ):
                         groups.append({
                             'group_id': group.group_id,

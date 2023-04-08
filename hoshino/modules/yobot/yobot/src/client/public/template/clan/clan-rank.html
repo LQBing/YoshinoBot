@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+
+<head>
+	<title>会战排名查询</title>
+	<meta name='viewport' content='width=480' charset="utf-8" />
+	<script src="/yobot-depencency/vue@2.6.11/dist/vue.min.js"></script>
+	<script src="/yobot-depencency/axios@0.19.2/dist/axios.min.js"></script>
+	<script src="/yobot-depencency/element-ui@2.13.0/lib/index.js"></script>
+	<link rel="stylesheet" href="/yobot-depencency/element-ui@2.13.0/lib/theme-chalk/index.css">
+	<script src="/yobot-depencency/jquery@2.1.1/jquery.min.js"></script>
+	<script src="/yobot-depencency/yocool@final/princessadventure/yocool.js"></script>
+	<link rel="stylesheet" href="/yobot-depencency/yocool@final/princessadventure/style.css">
+	
+	<style>
+		.el-main{
+			overflow: hidden;
+		}
+		
+		@media only screen and (max-width: 1080px) {
+		.el-dialog {
+		    width: 80%;
+		}
+		}
+
+		@media only screen and (min-width: 1500px) {
+		.clanbg {
+		    margin-bottom: -5%;
+		}
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app">
+		<div id="topToolbar">
+			<el-page-header @back="location='../'"></el-page-header>
+			
+			<el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
+				<el-menu-item index="6">排名</el-menu-item>
+				<el-menu-item index="5">我的</el-menu-item>
+				<el-menu-item index="4">统计</el-menu-item>
+				<el-menu-item index="3">查刀</el-menu-item>
+				<el-menu-item index="2">预约</el-menu-item>
+				<el-menu-item index="1">面板</el-menu-item>
+			</el-menu>
+		</div>
+		<div class="clancycle" style="margin-top: 50px;">目前仅支持国服</div>
+		<iframe style="margin: 3%;width: 95%;" height="800" src="https://tools-wiki.biligame.com/pcr/battleRanking" ></iframe>
+	</div>
+</body>
+
+<script>
+	var csrf_token = "{{ session['csrf_token'] }}";
+</script>
+<script src="{{ url_for('yobot_static', filename='clan/clan-rank.js') }}"></script>
+
+</html>

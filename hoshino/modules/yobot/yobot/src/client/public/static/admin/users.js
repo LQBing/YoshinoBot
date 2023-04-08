@@ -38,7 +38,7 @@ var vm = new Vue({
             }
             var nd = new Date();
             nd.setTime(ts * 1000);
-            return nd.toLocaleString('chinese', {hour12: false, timeZone: 'asia/shanghai'});
+            return nd.toLocaleString('chinese', { hour12: false, timeZone: 'asia/shanghai' });
         },
         search: function (event) {
             Object.assign(this.querys, this.query_input);
@@ -124,7 +124,11 @@ var vm = new Vue({
                     message: '已取消删除'
                 });
             });
+
+
+
+
         },
     },
     delimiters: ['[[', ']]'],
-});
+})
